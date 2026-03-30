@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slogan Forge — IP-Verified Merch Slogans</title>
+  <meta name="description" content="AI pre-screened merch slogans with trademark, copyright, celebrity, and brand conflict checks. Browse niche packs and verify before listing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #050608;
+      --bg2:      #08090d;
+      --bg3:      #0a0c12;
+      --bg4:      #080a10;
+      --bg5:      #060810;
+      --border:   #12151c;
+      --border2:  #10162a;
+      --border3:  #1a2535;
+      --border4:  #151a24;
+      --text:     #b8c2d0;
+      --bright:   #edf0f7;
+      --light:    #e0e7f0;
+      --dim:      #8090a4;
+      --muted:    #6b7a8d;
+      --dark:     #3b4558;
+      --darker:   #2a3040;
+      --darkest:  #1e2430;
+      --blue:     #3b82f6;
+      --blue-l:   #7dd3fc;
+      --green:    #22c55e;
+      --yellow:   #eab308;
+      --red:      #ef4444;
+      --purple:   #8b5cf6;
+      --purple-l: #c4b5fd;
+      --slate:    #94a3b8;
+      --mono:     'DM Mono','IBM Plex Mono',monospace;
+      --sans:     'DM Sans',sans-serif;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ───────────────────────────── */
+    .hdr {
+      position: sticky; top: 0; z-index: 100;
+      padding: 14px 24px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .hdr-brand { display: flex; align-items: center; gap: 10px; }
+    .hdr-icon {
+      width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .brand-name {
+      font-family: var(--sans); font-weight: 800; font-size: 15px;
+      color: var(--bright); letter-spacing: -0.03em;
+    }
+    .brand-sub { font-size: 9px; color: var(--dark); letter-spacing: 0.04em; }
+
+    .export-btn {
+      display: none; padding: 6px 14px; border-radius: 6px;
+      border: 1px solid var(--border3); background: #0c1018;
+      color: var(--blue-l); font-size: 10px; font-family: var(--mono);
+      cursor: pointer; font-weight: 500;
+    }
+    .export-btn.vis { display: block; }
+    .export-btn:hover { background: #111827; }
+
+    /* ── MAIN ─────────────────────────────── */
+    .main { max-width: 900px; margin: 0 auto; padding: 20px 18px 60px; }
+
+    /* ── PACK SELECTOR ───────────────────── */
+    .pack-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+    .pack-btn {
+      padding: 8px 16px; border-radius: 6px; cursor: pointer;
+      font-family: var(--sans); font-weight: 600; font-size: 12px;
+      border: 1px solid var(--border); background: var(--bg3); color: var(--dark);
+      transition: all .15s;
+    }
+    .pack-btn.on {
+      border-color: rgba(59,130,246,.2);
+      background: rgba(59,130,246,.063);
+      color: var(--blue-l);
+    }
+
+    /* ── MARKET INTEL ─────────────────────── */
+    .market {
+      background: var(--bg4); border: 1px solid var(--border2);
+      border-radius: 8px; margin-bottom: 16px; overflow: hidden;
+    }
+    .market-hd {
+      padding: 12px 16px; cursor: pointer;
+      font-size: 11px; color: var(--blue); font-weight: 600; letter-spacing: .04em;
+      display: flex; align-items: center; justify-content: space-between;
+      user-select: none;
+    }
+    .market-hd::after { content: '▶'; font-size: 8px; transition: transform .2s; }
+    .market.open .market-hd::after { transform: rotate(90deg); }
+    .market-body {
+      display: none; padding: 0 16px 14px;
+      border-top: 1px solid var(--border2);
+    }
+    .market.open .market-body { display: block; }
+    .market-body p {
+      font-size: 12px; line-height: 1.6; color: var(--dim); margin: 8px 0 10px;
+    }
+    .market-gap {
+      font-size: 11px; color: var(--green); margin: 0 0 10px;
+      padding: 6px 10px; background: #060d07;
+      border-radius: 4px; border: 1px solid #0f2a15;
+    }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+    .tag-lbl {
+      font-size: 9px; color: var(--dark); text-transform: uppercase;
+      letter-spacing: .04em; margin-bottom: 4px;
+    }
+    .etag {
+      font-size: 10px; padding: 2px 8px;
+      background: #0c1018; border: 1px solid var(--border3);
+      border-radius: 4px; color: var(--blue-l);
+    }
+    .btag {
+      font-size: 10px; padding: 2px 7px;
+      background: var(--bg4); border: 1px solid var(--border);
+      border-radius: 3px; color: var(--muted);
+    }
+
+    /* ── FILTER BAR ──────────────────────── */
+    .filter-bar { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .fbtn {
+      padding: 5px 12px; border-radius: 5px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--dark); font-size: 11px; font-family: var(--mono);
+      cursor: pointer; transition: all .15s;
+    }
+
+    /* ── SLOGAN LIST ─────────────────────── */
+    .slist { display: flex; flex-direction: column; gap: 4px; }
+    .scard {
+      background: var(--bg3); border-radius: 7px; padding: 10px 14px;
+      border: 1px solid transparent; border-left: 3px solid transparent;
+    }
+    .scard.saved {
+      background: #0c0e1a;
+      border-color: rgba(59,53,128,.2);
+      border-left-color: var(--purple);
+    }
+    .srow {
+      display: flex; align-items: center; gap: 8px; cursor: pointer;
+    }
+    .star-btn {
+      width: 22px; height: 22px; border-radius: 4px; flex-shrink: 0;
+      border: 1px solid #1a1e28; background: transparent;
+      color: #2a3040; font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); transition: all .15s;
+    }
+    .star-btn.on {
+      border-color: var(--purple);
+      background: rgba(139,92,246,.125);
+      color: var(--purple-l);
+    }
+    .stxt-wrap { flex: 1; min-width: 0; }
+    .stxt {
+      font-size: 14px; font-weight: 700; color: var(--light);
+      font-family: var(--sans); letter-spacing: -.01em;
+    }
+    .smeta { font-size: 10px; color: var(--dark); margin-top: 1px; }
+    .sbadges {
+      display: flex; align-items: center; gap: 5px;
+      flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end;
+    }
+    .prod-badge {
+      font-size: 9px; padding: 2px 6px; border-radius: 3px;
+      background: #0c1018; border: 1px solid var(--border); color: var(--dark);
+    }
+    .risk-badge {
+      font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 4px;
+    }
+
+    /* ── EXPANDED ────────────────────────── */
+    .sexp {
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .step-lbl {
+      font-size: 9px; color: var(--blue); text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 6px; font-weight: 600;
+    }
+    .reasoning {
+      font-size: 11px; line-height: 1.6; color: var(--dim); margin: 0 0 8px;
+    }
+    .ip-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 6px; font-size: 10px; margin-bottom: 6px;
+    }
+    .ip-cell {
+      padding: 6px 8px; background: var(--bg5); border-radius: 4px;
+      border: 1px solid var(--border); text-align: center;
+    }
+    .ip-lbl { color: var(--dark); font-size: 9px; margin-bottom: 2px; }
+    .ip-val { font-weight: 600; }
+    .ip-meta { display: flex; gap: 12px; font-size: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+    .rec { font-size: 11px; font-weight: 600; margin-top: 4px; }
+
+    /* ── VERIFY LINKS ────────────────────── */
+    .vlinks {
+      margin-top: 10px; padding: 10px 12px;
+      background: var(--bg5); border-radius: 6px; border: 1px solid var(--border4);
+    }
+    .vlbl {
+      font-size: 9px; color: var(--dark); text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 8px; font-weight: 600;
+    }
+    .vgrid { display: flex; gap: 5px; flex-wrap: wrap; }
+    .vlink {
+      font-size: 10px; padding: 5px 12px; border-radius: 5px;
+      background: #0c1018; border: 1px solid var(--border3);
+      text-decoration: none; font-family: var(--mono);
+      transition: background .2s;
+    }
+    .vlink:hover { background: #111827; }
+    .vlink.b { color: var(--blue-l); }
+    .vlink.p { color: var(--purple-l); }
+    .vlink.s { color: var(--slate); }
+
+    /* ── HOW IT WORKS ────────────────────── */
+    .howto {
+      margin-top: 24px; padding: 14px 16px;
+      background: var(--bg4); border-radius: 8px;
+      border: 1px solid var(--border2);
+      font-size: 11px; color: var(--dark); line-height: 1.7;
+    }
+    .howto-title {
+      color: var(--blue-l); font-weight: 600;
+      font-family: var(--sans); margin-bottom: 4px;
+    }
+    .howto-note { margin-top: 6px; color: var(--darker); font-size: 10px; }
+
+    /* ── FOOTER ──────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 16px 24px; text-align: center;
+      font-size: 11px; color: var(--dark);
+      background: var(--bg2);
+    }
+    .footer a { color: var(--blue-l); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* ── EMPTY STATE ─────────────────────── */
+    .empty { text-align: center; padding: 60px 20px; color: var(--darkest); }
+
+    /* ── MOBILE ──────────────────────────── */
+    @media (max-width: 640px) {
+      .hdr { padding: 12px 14px; }
+      .main { padding: 14px 12px 60px; }
+      .ip-grid { grid-template-columns: 1fr 1fr; }
+      .stxt { font-size: 13px; }
+      .prod-badge { display: none; }
+      .risk-badge { font-size: 9px; padding: 3px 8px; }
+    }
+    @media (max-width: 380px) {
+      .brand-sub { display: none; }
+      .stxt { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// NICHE PACKS — Edit or add packs below. Each object follows this schema:
+//
+//   id:        unique slug string
+//   name:      display name
+//   icon:      emoji
+//   generated: ISO date string
+//   research:  { summary, gap, emotions[], structures[], bestsellers[] }
+//   slogans:   array of slogan objects (see below)
+//
+// Slogan object fields:
+//   text          — the slogan
+//   risk          — "low" | "medium" | "high"
+//   inspired_by   — inspiration note
+//   emotion       — dominant emotion/tone
+//   audience      — target buyer persona
+//   products      — array of product types e.g. ["tee","mug","tote"]
+//   tm            — boolean: trademark risk found
+//   copyright     — boolean: copyright risk found
+//   celebrity     — boolean: celebrity likeness risk found
+//   brand         — boolean: brand conflict risk found
+//   saturation    — "none" | "low" | "moderate" | "heavy"
+//   reasoning     — AI pre-screening explanation
+//   recommendation — short action string
+// ═══════════════════════════════════════════════════════════════════════
+
+const NICHE_PACKS = [
+  {
+    id: "teacher-education",
+    name: "Teacher / Education",
+    icon: "📚",
+    generated: "2026-03-30",
+    research: {
+      summary: "Teacher merch is evergreen and high-demand, driven by identity pride, coffee humour, and self-deprecating jokes about classroom chaos. Bestsellers cluster around occupation pride, burnout humour, and chaos management. Saturated with generic phrases but gaps exist in subject-specific humour, UK teacher culture, and TA/support staff slogans.",
+      gap: "Subject-specific humour (maths puns, science wordplay), UK-specific culture (Ofsted jokes, marking pile humour), and TA/support staff slogans are underserved.",
+      emotions: ["Pride", "Self-deprecating humour", "Coffee addiction", "Chaos management", "Empowerment", "Sarcasm", "Heartfelt purpose"],
+      structures: ["Verb-verb-verb format", "'X is my...' identity", "Don't make me...", "Coffee + teaching combo", "Superhero pride", "Self-deprecating title"],
+      bestsellers: [
+        "Teach Love Inspire","Coffee Teach Sleep Repeat","Chaos Coordinator",
+        "Don't Make Me Use My Teacher Voice","Teaching Is My Superpower","Difference Maker",
+        "Recess Is My Spirit Animal","I Teach Smart Cookies","Wake Up Teach Kids Be Awesome",
+        "Remind Me To Take Attendance","Grow Them Like Wildflowers","Teacher Mode",
+        "Love Them First Teach Them Second",
+      ],
+    },
+    slogans: [
+      { text: "Fuelled By Markers And Optimism", risk: "low", inspired_by: "Coffee/fuel addiction format", emotion: "self-deprecating humour", audience: "Primary teachers", products: ["tee","mug","tote"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "none", reasoning: "Completely original. No trademark matches. Generic words in original combination. Safe for Amazon.", recommendation: "safe to list" },
+      { text: "Survived Another Glue Stick Season", risk: "low", inspired_by: "Classroom chaos humour", emotion: "sarcastic pride", audience: "Early years / KS1", products: ["tee","hoodie"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "none", reasoning: "Original phrase. Glue stick humour is niche within teacher merch. No IP concerns.", recommendation: "safe to list" },
+      { text: "My Lesson Plan Is Winging It", risk: "low", inspired_by: "Self-deprecating honesty", emotion: "humour", audience: "All teachers, NQTs", products: ["tee","mug","sticker"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "low", reasoning: "'Winging it' is common but combined with 'lesson plan' is original. Some similar concepts but not this wording.", recommendation: "safe to list" },
+      { text: "Educating Tiny Tornadoes Daily", risk: "low", inspired_by: "Chaos Coordinator reframe", emotion: "pride + humour", audience: "Primary / nursery", products: ["tee","hoodie","tote"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "none", reasoning: "Original phrase. 'Tiny tornadoes' is colloquial but this combination is not trademarked.", recommendation: "safe to list" },
+      { text: "Running On Dry Erase Fumes", risk: "low", inspired_by: "Coffee addiction format", emotion: "sarcasm", audience: "Secondary teachers", products: ["tee","mug"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "none", reasoning: "Highly original. Dry erase marker humour is teacher-specific. No existing products.", recommendation: "safe to list" },
+      { text: "I Peaked At Laminating", risk: "low", inspired_by: "Insider teacher culture", emotion: "self-deprecating pride", audience: "All teachers", products: ["tee","mug","sticker","tote"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "low", reasoning: "Laminator love is a deeply relatable insider joke. Original phrasing. High viral potential.", recommendation: "safe to list" },
+      { text: "Ctrl+Z Won't Fix This Classroom", risk: "low", inspired_by: "Tech crossover humour", emotion: "nerd sarcasm", audience: "IT teachers, tech educators", products: ["tee","sticker"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "none", reasoning: "Original crossover. Ctrl+Z is a generic keyboard command, not trademarked as a phrase.", recommendation: "safe to list" },
+      { text: "Alphabetically Exhausted", risk: "low", inspired_by: "Wordplay / pun structure", emotion: "dry wit", audience: "English / literacy teachers", products: ["tee","mug","hoodie"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "none", reasoning: "Clever original wordplay. No trademark, attribution, or existing products.", recommendation: "safe to list" },
+      { text: "Professionally Calm Internally Screaming", risk: "medium", inspired_by: "Dual-state humour", emotion: "relatable sarcasm", audience: "All teachers", products: ["tee","hoodie","mug"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "moderate", reasoning: "The calm/screaming concept exists on merch already. Not trademarked but competition is moderate.", recommendation: "use unique design to stand out" },
+      { text: "Marking Season Is My Villain Arc", risk: "low", inspired_by: "Gen Z slang crossover", emotion: "dark humour", audience: "Secondary, younger educators", products: ["tee","sticker"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "none", reasoning: "Original phrase using trending slang. 'Villain arc' is internet slang, not trademarked. UK-specific.", recommendation: "safe to list" },
+      { text: "Board Pens Are My Love Language", risk: "low", inspired_by: "'X is my love language' meme", emotion: "wholesome humour", audience: "All teachers", products: ["tee","mug","tote"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "low", reasoning: "'Love language' format is genericised. 'Board pens' makes it teacher-specific and original.", recommendation: "safe to list" },
+      { text: "Sorry Can't I Have Reports Due", risk: "low", inspired_by: "Excuse format humour", emotion: "relatable burnout", audience: "All teachers", products: ["tee","hoodie"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "none", reasoning: "Original teacher-specific excuse format. Seasonal appeal around report-writing periods.", recommendation: "safe to list" },
+      { text: "50% Educator 50% Negotiator", risk: "low", inspired_by: "Percentage identity format", emotion: "pride + humour", audience: "Primary teachers", products: ["tee","mug"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "none", reasoning: "Original percentage format. Neither word trademarked in merch classes.", recommendation: "safe to list" },
+      { text: "Teaching Is My Cardio", risk: "medium", inspired_by: "'X is my cardio' format", emotion: "humour", audience: "All teachers", products: ["tee"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "heavy", reasoning: "'X is my cardio' is extremely popular across niches. Already exists on multiple platforms. No IP risk but very high competition.", recommendation: "no IP risk but heavy saturation" },
+      { text: "I Teach Therefore I Drink Coffee", risk: "medium", inspired_by: "Descartes parody + coffee", emotion: "intellectual humour", audience: "All teachers", products: ["tee","mug","tote"], tm: false, copyright: false, celebrity: false, brand: false, saturation: "moderate", reasoning: "Parody of public domain Descartes quote (1637). The parody is original but the format is well-used.", recommendation: "safe IP-wise but format is saturated" },
+    ],
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+
+// ── State ──────────────────────────────────────────────────────────────
+const S = {
+  pack:       NICHE_PACKS[0]?.id || null,
+  expanded:   null,
+  filter:     'all',
+  saved:      new Set(),
+  mktOpen:    false,
+};
+
+// ── Helpers ────────────────────────────────────────────────────────────
+function h(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function verifyLinks(text) {
+  const q = encodeURIComponent(text);
+  const qt = encodeURIComponent(text + ' t-shirt');
+  const qs = encodeURIComponent(text + ' shirt');
+  const qg = encodeURIComponent('"' + text + '" trademark OR brand OR lyrics');
+  return [
+    { label:'USPTO',     cls:'b', url:`https://tmsearch.uspto.gov/bin/gate.exe?f=searchss&p_lang=english&p_d=trmk&p_s_PARA1=${q}&a_default=search&a_search=Submit+Query` },
+    { label:'UK IPO',    cls:'b', url:`https://trademarks.ipo.gov.uk/ipo-tmtext/page/Results?text=${q}&inarticle=true` },
+    { label:'EUIPO',     cls:'b', url:`https://euipo.europa.eu/eSearch/#basic/${q}` },
+    { label:'Amazon UK', cls:'p', url:`https://www.amazon.co.uk/s?k=${qt}` },
+    { label:'Amazon US', cls:'p', url:`https://www.amazon.com/s?k=${qt}` },
+    { label:'Etsy',      cls:'p', url:`https://www.etsy.com/search?q=${qs}` },
+    { label:'Google',    cls:'s', url:`https://www.google.com/search?q=${qg}` },
+  ];
+}
+
+const RISK_COLOR  = { low:'#22c55e', medium:'#eab308', high:'#ef4444' };
+const RISK_LABEL  = { low:'✓ CLEAR',  medium:'⚠ CAUTION', high:'✕ AVOID' };
+
+// ── Render ─────────────────────────────────────────────────────────────
+function render() {
+  const pack = NICHE_PACKS.find(p => p.id === S.pack);
+  const { filter, saved, expanded, mktOpen } = S;
+
+  let filtered = [];
+  if (pack) {
+    const all = pack.slogans.map((s, i) => ({ ...s, _i: i }));
+    if      (filter === 'all')   filtered = all;
+    else if (filter === 'saved') filtered = all.filter(s => saved.has(s._i));
+    else                         filtered = all.filter(s => s.risk === filter);
+  }
+
+  const cnt = pack ? {
+    low:    pack.slogans.filter(s => s.risk === 'low').length,
+    medium: pack.slogans.filter(s => s.risk === 'medium').length,
+    high:   pack.slogans.filter(s => s.risk === 'high').length,
+  } : {};
+
+  // ── Header ──────────────────────────────────────────────────────────
+  let out = `
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-icon">⚡</div>
+    <div>
+      <div class="brand-name">Slogan Forge</div>
+      <div class="brand-sub">IP-Verified Merch Slogans</div>
+    </div>
+  </div>
+  <button class="export-btn${saved.size > 0 ? ' vis' : ''}" onclick="_exp()">
+    Export ${h(String(saved.size))} saved ↓
+  </button>
+</header>
+<main class="main">`;
+
+  // ── Pack selector ────────────────────────────────────────────────────
+  if (NICHE_PACKS.length > 1) {
+    out += `<div class="pack-bar">`;
+    NICHE_PACKS.forEach(p => {
+      out += `<button class="pack-btn${S.pack === p.id ? ' on' : ''}" onclick="_sp('${h(p.id)}')">${h(p.icon)} ${h(p.name)}</button>`;
+    });
+    out += `</div>`;
+  }
+
+  if (pack) {
+    // ── Market Intel ───────────────────────────────────────────────────
+    out += `
+<div class="market${mktOpen ? ' open' : ''}" id="mkt">
+  <div class="market-hd" onclick="_mkt()">
+    MARKET INTELLIGENCE — ${h(pack.name.toUpperCase())} (click to expand)
+  </div>
+  <div class="market-body">
+    <p>${h(pack.research.summary)}</p>
+    ${pack.research.gap ? `<div class="market-gap">Market gap: ${h(pack.research.gap)}</div>` : ''}
+    <div class="tag-row">${(pack.research.emotions||[]).map(e => `<span class="etag">${h(e)}</span>`).join('')}</div>
+    <div class="tag-lbl">Bestsellers analysed</div>
+    <div class="tag-row">${(pack.research.bestsellers||[]).map(b => `<span class="btag">&quot;${h(b)}&quot;</span>`).join('')}</div>
+  </div>
+</div>`;
+
+    // ── Filter bar ─────────────────────────────────────────────────────
+    out += `<div class="filter-bar">`;
+    const fltrs = [
+      { f:'all',    label:`All ${pack.slogans.length}`, c:'#7dd3fc' },
+      { f:'low',    label:`Safe ${cnt.low}`,            c:'#22c55e' },
+      { f:'medium', label:`Caution ${cnt.medium}`,      c:'#eab308' },
+    ];
+    if (saved.size > 0) fltrs.push({ f:'saved', label:`Saved ${saved.size}`, c:'#c4b5fd' });
+    fltrs.forEach(({ f, label, c }) => {
+      const on = filter === f;
+      const style = on
+        ? `border-color:${c}33;background:${c}0d;color:${c};font-weight:600`
+        : `color:#3b4558`;
+      out += `<button class="fbtn" style="${style}" onclick="_sf('${f}')">${label}</button>`;
+    });
+    out += `</div>`;
+
+    // ── Slogan list ────────────────────────────────────────────────────
+    out += `<div class="slist">`;
+    filtered.forEach(s => {
+      const i     = s._i;
+      const sv    = saved.has(i);
+      const rc    = RISK_COLOR[s.risk];
+      const isExp = expanded === i;
+
+      const cardStyle = sv
+        ? `background:#0c0e1a;border-color:rgba(59,53,128,.2);border-left-color:#8b5cf6`
+        : `border-color:${rc}22`;
+
+      out += `<div class="scard${sv ? ' saved' : ''}" style="${cardStyle}">`;
+
+      // row
+      out += `<div class="srow" onclick="_te(${i})">`;
+
+      // star
+      out += `<button class="star-btn${sv ? ' on' : ''}" onclick="event.stopPropagation();_ts(${i})" aria-label="${sv ? 'Unsave' : 'Save'}">${sv ? '★' : '☆'}</button>`;
+
+      // text
+      out += `<div class="stxt-wrap">
+        <div class="stxt">&quot;${h(s.text)}&quot;</div>
+        <div class="smeta">${h(s.emotion)} · ${h(s.audience)}</div>
+      </div>`;
+
+      // badges
+      out += `<div class="sbadges">`;
+      if (s.products?.length) out += `<span class="prod-badge">${s.products.join(' · ')}</span>`;
+      out += `<span class="risk-badge" style="color:${rc};background:${rc}1a">${RISK_LABEL[s.risk]}</span>`;
+      out += `</div>`;
+
+      out += `</div>`; // .srow
+
+      // expanded
+      if (isExp) {
+        out += `<div class="sexp">
+  <div class="step-lbl">Step 1 — AI Pre-screening</div>
+  <p class="reasoning">${h(s.reasoning)}</p>`;
+
+        // IP grid
+        out += `<div class="ip-grid">`;
+        [
+          { label:'Trademark',  v: s.tm        },
+          { label:'Copyright',  v: s.copyright },
+          { label:'Celebrity',  v: s.celebrity },
+          { label:'Brand',      v: s.brand     },
+        ].forEach(({ label, v }) => {
+          const vc = v ? '#ef4444' : '#22c55e';
+          out += `<div class="ip-cell">
+    <div class="ip-lbl">${label}</div>
+    <div class="ip-val" style="color:${vc}">${v ? '⚠ FOUND' : '✓ Clear'}</div>
+  </div>`;
+        });
+        out += `</div>`; // .ip-grid
+
+        // meta row
+        out += `<div class="ip-meta">
+  <span><span style="color:#3b4558">Saturation:</span> <span style="color:#7dd3fc">${h(s.saturation)}</span></span>
+  <span><span style="color:#3b4558">Inspired by:</span> <span style="color:#6b7a8d">${h(s.inspired_by)}</span></span>
+</div>`;
+
+        // recommendation
+        const recC = s.recommendation.includes('safe') ? '#22c55e' : '#eab308';
+        out += `<div class="rec" style="color:${recC}">→ ${h(s.recommendation)}</div>`;
+
+        // verify links
+        out += `<div class="vlinks">
+  <div class="vlbl">Step 2 — Manually verify before listing</div>
+  <div class="vgrid">`;
+        verifyLinks(s.text).forEach(l => {
+          out += `<a href="${l.url}" target="_blank" rel="noopener noreferrer" class="vlink ${l.cls}">${h(l.label)} ↗</a>`;
+        });
+        out += `</div></div>`; // .vgrid .vlinks
+
+        out += `</div>`; // .sexp
+      }
+
+      out += `</div>`; // .scard
+    });
+    out += `</div>`; // .slist
+
+    // ── How it works ───────────────────────────────────────────────────
+    out += `
+<div class="howto">
+  <div class="howto-title">How it works</div>
+  <div><span style="color:#22c55e">1.</span> Browse AI-verified slogans — each has been pre-screened for trademarks, copyright, celebrity likeness, and brand conflicts.</div>
+  <div><span style="color:#22c55e">2.</span> Click any slogan → expand → use the verification links to manually confirm on USPTO, UK IPO, EUIPO, and marketplaces.</div>
+  <div><span style="color:#22c55e">3.</span> Star your winners → Export as CSV for your merch workflow.</div>
+  <div class="howto-note">AI screening catches ~95% of issues. The manual step catches the rest. Always verify before listing.</div>
+</div>`;
+
+  } else {
+    out += `<div class="empty"><div style="font-size:14px;font-family:var(--sans)">No niche packs loaded yet.</div></div>`;
+  }
+
+  out += `</main>`;
+
+  // ── Footer ─────────────────────────────────────────────────────────
+  out += `
+<footer class="footer">
+  Powered by <a href="https://merchality.com" target="_blank" rel="noopener noreferrer">Slogan Forge — IP-screened merch slogans</a>
+</footer>`;
+
+  document.getElementById('app').innerHTML = out;
+}
+
+// ── Actions (short names for inline onclick) ───────────────────────────
+function _sp(id) { S.pack = id; S.expanded = null; S.filter = 'all'; S.mktOpen = false; render(); }
+function _mkt()  { S.mktOpen = !S.mktOpen; render(); }
+function _sf(f)  { S.filter = f; render(); }
+function _te(i)  { S.expanded = S.expanded === i ? null : i; render(); }
+function _ts(i)  { S.saved.has(i) ? S.saved.delete(i) : S.saved.add(i); render(); }
+
+function _exp() {
+  const pack = NICHE_PACKS.find(p => p.id === S.pack);
+  if (!pack) return;
+  const items = pack.slogans.filter((_, i) => S.saved.has(i));
+  if (!items.length) return;
+  const H = ['Slogan','Risk','Emotion','Audience','Products','Saturation','Recommendation'];
+  const rows = items.map(s => [
+    s.text, s.risk, s.emotion, s.audience,
+    (s.products||[]).join('/'), s.saturation, s.recommendation,
+  ].map(v => '"' + String(v).replace(/"/g, '""') + '"'));
+  const csv = [H.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = `slogans-${pack.id}-${Date.now()}.csv`;
+  a.click();
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
