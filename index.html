@@ -67,14 +67,17 @@
     }
     .brand-sub { font-size: 9px; color: var(--dark); letter-spacing: 0.04em; }
 
+    .hdr-actions { display: flex; gap: 6px; align-items: center; }
     .export-btn {
       display: none; padding: 6px 14px; border-radius: 6px;
       border: 1px solid var(--border3); background: #0c1018;
-      color: var(--blue-l); font-size: 10px; font-family: var(--mono);
+      font-size: 10px; font-family: var(--mono);
       cursor: pointer; font-weight: 500;
     }
     .export-btn.vis { display: block; }
     .export-btn:hover { background: #111827; }
+    .export-btn.std { color: var(--blue-l); }
+    .export-btn.mba { color: var(--purple-l); border-color: rgba(139,92,246,.4); }
 
     /* ── MAIN ─────────────────────────────── */
     .main { max-width: 900px; margin: 0 auto; padding: 20px 18px 60px; }
@@ -572,9 +575,10 @@ function render() {
       <div class="brand-sub">IP-Screened Merch Slogans</div>
     </div>
   </div>
-  <button class="export-btn${saved.size > 0 ? ' vis' : ''}" onclick="_exp()">
-    Export ${h(String(saved.size))} saved ↓
-  </button>
+  <div class="hdr-actions">
+    <button class="export-btn std${saved.size > 0 ? ' vis' : ''}" onclick="_exp()">Export CSV ↓</button>
+    <button class="export-btn mba${saved.size > 0 ? ' vis' : ''}" onclick="_mba()">MBA Export ↓</button>
+  </div>
 </header>
 <main class="main">`;
 
@@ -748,6 +752,45 @@ function _exp() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
   a.download = `slogans-${pack.id}-${Date.now()}.csv`;
+  a.click();
+}
+
+// ── MBA copy generator ─────────────────────────────────────────────────
+function _mbaCopy(s) {
+  // Title: max 60 chars. Format: "[Slogan]" — Funny [Audience] Gift
+  const titleLong = `"${s.text}" — Funny ${s.audience} Gift`;
+  const title = titleLong.length <= 60 ? titleLong : `"${s.text}"`.substring(0, 57) + '...';
+
+  // Brand: consistent across all listings
+  const brand = 'Merch Observer';
+
+  // Bullet 1: design/message description (~256 chars)
+  const prods = (s.products||['t-shirt']).map(p => p === 'tee' ? 't-shirt' : p).join(', ');
+  const b1raw = `${s.text} — a ${s.emotion} design for ${s.audience}. ${s.inspired_by}. Printed on a soft, lightweight ${prods}. Perfect for anyone who loves a bit of ${s.emotion}.`;
+  const bullet1 = b1raw.substring(0, 256);
+
+  // Bullet 2: gift occasion + product quality (~256 chars)
+  const b2raw = `Makes a brilliant gift for ${s.audience} — birthdays, Christmas, Secret Santa, or just because. Classic fit, double-needle sleeve and bottom hem. Available in multiple colours and sizes.`;
+  const bullet2 = b2raw.substring(0, 256);
+
+  return { title, brand, bullet1, bullet2 };
+}
+
+function _mba() {
+  const pack = NICHE_PACKS.find(p => p.id === S.pack);
+  if (!pack) return;
+  const items = pack.slogans.filter((_, i) => S.saved.has(i));
+  if (!items.length) return;
+  const H = ['Title','Brand','Bullet1','Bullet2','Slogan','Risk','Audience','Saturation','Recommendation'];
+  const rows = items.map(s => {
+    const { title, brand, bullet1, bullet2 } = _mbaCopy(s);
+    return [title, brand, bullet1, bullet2, s.text, s.risk, s.audience, s.saturation, s.recommendation]
+      .map(v => '"' + String(v).replace(/"/g, '""') + '"');
+  });
+  const csv = [H.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = `mba-${pack.id}-${Date.now()}.csv`;
   a.click();
 }
 
