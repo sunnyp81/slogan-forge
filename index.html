@@ -1131,7 +1131,25 @@ async function _png(btn) {
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────
-render();
+// Curated packs above are the baseline. If a daily radar feed (slogans.json)
+// is present it is prepended as fresh pack(s); if absent (404/offline) the site
+// renders exactly as before. The pipeline owns slogans.json.
+async function _initRadar() {
+  try {
+    const res = await fetch('slogans.json', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      const packs = Array.isArray(data) ? data : (data.packs || []);
+      const fresh = packs.filter(p => p && p.id && Array.isArray(p.slogans) && p.slogans.length);
+      if (fresh.length) {
+        NICHE_PACKS.unshift(...fresh);   // newest first, curated untouched
+        S.pack = fresh[0].id;
+      }
+    }
+  } catch (e) { /* no feed yet: fall back to curated packs */ }
+  render();
+}
+_initRadar();
 </script>
 </body>
 </html>
