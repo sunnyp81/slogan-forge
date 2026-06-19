@@ -6,7 +6,7 @@
   <title>Merch.Observer — IP-Verified Merch Slogans</title>
   <meta name="description" content="AI pre-screened merch slogans with trademark, copyright, celebrity, and brand conflict checks. Browse niche packs and verify before listing.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -281,6 +281,94 @@
   </style>
 </head>
 <body>
+
+<style id="mo-redesign">
+:root{
+ --mo-bg:#f6f6f3;--mo-card:#fff;--mo-ink:#1b1b29;--mo-ink2:#44445c;--mo-muted:#7a7a90;
+ --mo-line:#ececf1;--mo-accent:#5b54e6;--mo-accent2:#463fd0;--mo-accent-soft:#eeedfb;
+ --mo-safe:#0c8a4e;--mo-safe-bg:#e6f5ec;--mo-caut:#a85d09;--mo-caut-bg:#faefdd;
+ --mo-avoid:#c0332c;--mo-avoid-bg:#fae8e7;
+ --mo-sans:'DM Sans',system-ui,sans-serif;--mo-disp:'Bricolage Grotesque',var(--mo-sans);--mo-mono:'DM Mono',monospace;
+ --mo-sh:0 1px 2px rgba(20,20,40,.04),0 8px 24px rgba(20,20,40,.06);
+ --mo-shh:0 2px 8px rgba(91,84,230,.12),0 16px 40px rgba(91,84,230,.14);
+ --mo-r:18px;
+}
+html,body{background:var(--mo-bg)!important;color:var(--mo-ink)!important;font-family:var(--mo-sans)!important;line-height:1.5;-webkit-font-smoothing:antialiased;}
+body{background-image:radial-gradient(58rem 26rem at 50% -8rem,rgba(91,84,230,.10),transparent 70%)!important;background-attachment:fixed;}
+#app{max-width:740px;margin:0 auto;padding:0 18px 96px;}
+::selection{background:var(--mo-accent-soft);}
+.mo-top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 14px;margin-bottom:6px;background:linear-gradient(var(--mo-bg) 72%,transparent);}
+.mo-brand{display:flex;align-items:center;gap:11px;}
+.mo-logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--mo-accent),#8a83ff);display:grid;place-items:center;color:#fff;font-size:19px;box-shadow:var(--mo-shh);}
+.mo-name{font-family:var(--mo-disp);font-weight:800;font-size:19px;letter-spacing:-.02em;color:var(--mo-ink);line-height:1;}
+.mo-tag{font-size:11.5px;color:var(--mo-muted);font-weight:500;margin-top:3px;}
+.mo-actions{display:flex;gap:8px;}
+.mo-xbtn{font:600 12.5px var(--mo-sans);padding:9px 13px;border-radius:10px;border:1px solid var(--mo-line);background:var(--mo-card);color:var(--mo-ink2);cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;}
+.mo-xbtn:hover{transform:translateY(-1px);box-shadow:var(--mo-sh);border-color:#dcdce4;}
+.mo-xbtn.pri{background:var(--mo-accent);border-color:var(--mo-accent);color:#fff;}
+.mo-xbtn.pri:hover{box-shadow:var(--mo-shh);}
+.mo-packs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none;}
+.mo-packs::-webkit-scrollbar{display:none;}
+.mo-pack{flex:0 0 auto;font:600 13px var(--mo-sans);padding:9px 14px;border-radius:999px;border:1px solid var(--mo-line);background:var(--mo-card);color:var(--mo-ink2);cursor:pointer;white-space:nowrap;transition:transform .12s,box-shadow .12s;}
+.mo-pack:hover{transform:translateY(-1px);box-shadow:var(--mo-sh);}
+.mo-pack.on{background:var(--mo-ink);border-color:var(--mo-ink);color:#fff;}
+.mo-pack.fresh.on{background:linear-gradient(135deg,var(--mo-accent),#8a83ff);border-color:transparent;}
+.mo-intel{background:var(--mo-card);border:1px solid var(--mo-line);border-radius:var(--mo-r);margin-bottom:14px;overflow:hidden;box-shadow:var(--mo-sh);}
+.mo-intel-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;font:600 12px var(--mo-mono);letter-spacing:.03em;color:var(--mo-muted);text-transform:uppercase;}
+.mo-intel-bd{padding:0 16px 16px;display:none;font-size:13.5px;color:var(--mo-ink2);}
+.mo-intel.open .mo-intel-bd{display:block;}
+.mo-gap{margin-top:10px;padding:10px 12px;background:var(--mo-accent-soft);border-radius:10px;font-size:13px;color:var(--mo-accent2);}
+.mo-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.mo-etag{font:500 11.5px var(--mo-sans);padding:4px 9px;border-radius:999px;background:#f1f1f5;color:var(--mo-ink2);}
+.mo-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.mo-f{font:600 12.5px var(--mo-sans);padding:8px 13px;border-radius:999px;border:1px solid var(--mo-line);background:var(--mo-card);color:var(--mo-muted);cursor:pointer;transition:transform .12s;}
+.mo-f:hover{transform:translateY(-1px);}
+.mo-f.on{background:var(--mo-ink);border-color:var(--mo-ink);color:#fff;}
+.mo-list{display:flex;flex-direction:column;gap:12px;}
+.mo-card{background:var(--mo-card);border:1px solid var(--mo-line);border-radius:var(--mo-r);box-shadow:var(--mo-sh);transition:transform .14s,box-shadow .14s;overflow:hidden;}
+.mo-card:hover{transform:translateY(-2px);box-shadow:var(--mo-shh);}
+.mo-card.saved{border-color:#cfcbf7;}
+.mo-head{padding:16px 16px 14px;cursor:pointer;}
+.mo-text{font-family:var(--mo-disp);font-weight:700;font-size:21px;line-height:1.22;letter-spacing:-.015em;color:var(--mo-ink);}
+.mo-sub{margin-top:7px;font-size:12.5px;color:var(--mo-muted);}
+.mo-chips{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:12px;}
+.mo-chip{font:600 11px var(--mo-mono);letter-spacing:.02em;padding:5px 9px;border-radius:999px;}
+.mo-chip.safe{background:var(--mo-safe-bg);color:var(--mo-safe);}
+.mo-chip.caution{background:var(--mo-caut-bg);color:var(--mo-caut);}
+.mo-chip.avoid{background:var(--mo-avoid-bg);color:var(--mo-avoid);}
+.mo-prod{font:500 11px var(--mo-sans);padding:5px 9px;border-radius:999px;background:#f1f1f5;color:var(--mo-ink2);}
+.mo-row{display:flex;gap:8px;padding:0 16px 16px;}
+.mo-copy{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;font:700 14px var(--mo-sans);padding:12px;border-radius:12px;border:none;background:var(--mo-accent);color:#fff;cursor:pointer;transition:transform .12s,box-shadow .12s,background .2s;}
+.mo-copy:hover{transform:translateY(-1px);box-shadow:var(--mo-shh);background:var(--mo-accent2);}
+.mo-copy.ok{background:var(--mo-safe);}
+.mo-star{width:46px;flex:0 0 auto;border:1px solid var(--mo-line);background:var(--mo-card);border-radius:12px;font-size:18px;color:#c9c9d6;cursor:pointer;transition:transform .12s,color .12s;}
+.mo-star:hover{transform:translateY(-1px);}
+.mo-star.on{color:#f5b301;border-color:#f3e2a8;background:#fef9ec;}
+.mo-exp{border-top:1px solid var(--mo-line);padding:16px;background:#fcfcfb;}
+.mo-step{font:600 11px var(--mo-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--mo-muted);margin-bottom:8px;}
+.mo-reason{font-size:13.5px;color:var(--mo-ink2);line-height:1.55;}
+.mo-ip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0;}
+.mo-ipc{text-align:center;padding:10px 6px;border-radius:10px;background:#fff;border:1px solid var(--mo-line);}
+.mo-ipl{font:500 10.5px var(--mo-sans);color:var(--mo-muted);}
+.mo-ipv{font:700 12px var(--mo-sans);margin-top:3px;}
+.mo-ipv.clear{color:var(--mo-safe);}.mo-ipv.found{color:var(--mo-avoid);}
+.mo-rec{font:600 13px var(--mo-sans);margin:6px 0 14px;}
+.mo-vlbl{font:600 11px var(--mo-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--mo-muted);margin-bottom:8px;}
+.mo-vlinks{display:flex;flex-wrap:wrap;gap:7px;}
+.mo-vlink{font:600 12px var(--mo-sans);padding:7px 11px;border-radius:9px;border:1px solid var(--mo-line);background:#fff;color:var(--mo-ink2);text-decoration:none;transition:transform .12s,border-color .12s,color .12s;}
+.mo-vlink:hover{transform:translateY(-1px);border-color:var(--mo-accent);color:var(--mo-accent);}
+.mo-howto{margin-top:22px;background:var(--mo-card);border:1px solid var(--mo-line);border-radius:var(--mo-r);padding:18px;box-shadow:var(--mo-sh);}
+.mo-howto h3{font-family:var(--mo-disp);font-size:15px;margin-bottom:10px;}
+.mo-howto p{font-size:13px;color:var(--mo-ink2);margin-bottom:7px;line-height:1.5;}
+.mo-howto .n{color:var(--mo-muted);font-style:italic;}
+.mo-empty{text-align:center;padding:60px 20px;color:var(--mo-muted);font-size:14px;}
+.mo-foot{text-align:center;margin-top:30px;font-size:12px;color:var(--mo-muted);}
+.mo-foot a{color:var(--mo-accent);text-decoration:none;}
+.mo-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--mo-ink);color:#fff;font:600 13px var(--mo-sans);padding:11px 18px;border-radius:12px;box-shadow:var(--mo-shh);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;}
+.mo-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@media(max-width:560px){.mo-text{font-size:19px;}.mo-tag{display:none;}.mo-ip{grid-template-columns:repeat(2,1fr);}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
 
 <div id="app"></div>
 
@@ -755,166 +843,125 @@ function render() {
   } : {};
 
   // ── Header ──────────────────────────────────────────────────────────
+  const xv = saved.size > 0 ? '' : 'style="display:none"';
   let out = `
-<header class="hdr">
-  <div class="hdr-brand">
-    <div class="hdr-icon">⚡</div>
+<div class="mo-top">
+  <div class="mo-brand">
+    <div class="mo-logo">⚡</div>
     <div>
-      <div class="brand-name">Merch.Observer</div>
-      <div class="brand-sub">IP-Screened Merch Slogans</div>
+      <div class="mo-name">Merch.Observer</div>
+      <div class="mo-tag">IP-screened slogans · tap to copy</div>
     </div>
   </div>
-  <div class="hdr-actions">
-    <button class="export-btn std${saved.size > 0 ? ' vis' : ''}" onclick="_exp()">Export CSV ↓</button>
-    <button class="export-btn mba${saved.size > 0 ? ' vis' : ''}" onclick="_mba()">MBA Export ↓</button>
-    <button class="export-btn png${saved.size > 0 ? ' vis' : ''}" onclick="_png(this)">PNG Export ↓</button>
+  <div class="mo-actions">
+    <button class="mo-xbtn" ${xv} onclick="_exp()">CSV</button>
+    <button class="mo-xbtn" ${xv} onclick="_mba()">MBA</button>
+    <button class="mo-xbtn pri" ${xv} onclick="_png(this)">PNG</button>
   </div>
-</header>
-<main class="main">`;
+</div>
+<main>`;
 
   // ── Pack selector ────────────────────────────────────────────────────
   if (NICHE_PACKS.length > 1) {
-    out += `<div class="pack-bar">`;
+    out += `<div class="mo-packs">`;
     NICHE_PACKS.forEach(p => {
-      out += `<button class="pack-btn${S.pack === p.id ? ' on' : ''}" onclick="_sp('${h(p.id)}')">${h(p.icon)} ${h(p.name)}</button>`;
+      const fresh = p.id === 'daily-radar' ? ' fresh' : '';
+      out += `<button class="mo-pack${fresh}${S.pack === p.id ? ' on' : ''}" onclick="_sp('${h(p.id)}')">${h(p.icon)} ${h(p.name)}</button>`;
     });
     out += `</div>`;
   }
 
   if (pack) {
     // ── Market Intel ───────────────────────────────────────────────────
+    const R = pack.research || {};
     out += `
-<div class="market${mktOpen ? ' open' : ''}" id="mkt">
-  <div class="market-hd" onclick="_mkt()">
-    MARKET INTELLIGENCE — ${h(pack.name.toUpperCase())} (click to expand)
+<div class="mo-intel${mktOpen ? ' open' : ''}">
+  <div class="mo-intel-hd" onclick="_mkt()">
+    <span>Market intel · ${h(pack.name)}</span><span>${mktOpen ? '–' : '+'}</span>
   </div>
-  <div class="market-body">
-    <p>${h(pack.research.summary)}</p>
-    ${pack.research.gap ? `<div class="market-gap">Market gap: ${h(pack.research.gap)}</div>` : ''}
-    <div class="tag-row">${(pack.research.emotions||[]).map(e => `<span class="etag">${h(e)}</span>`).join('')}</div>
-    <div class="tag-lbl">Bestsellers analysed</div>
-    <div class="tag-row">${(pack.research.bestsellers||[]).map(b => `<span class="btag">&quot;${h(b)}&quot;</span>`).join('')}</div>
+  <div class="mo-intel-bd">
+    <p>${h(R.summary)}</p>
+    ${R.gap ? `<div class="mo-gap">Gap: ${h(R.gap)}</div>` : ''}
+    <div class="mo-tags">${(R.emotions||[]).map(e => `<span class="mo-etag">${h(e)}</span>`).join('')}</div>
   </div>
 </div>`;
 
     // ── Filter bar ─────────────────────────────────────────────────────
-    out += `<div class="filter-bar">`;
+    out += `<div class="mo-filters">`;
     const fltrs = [
-      { f:'all',    label:`All ${pack.slogans.length}`, c:'#7dd3fc' },
-      { f:'low',    label:`Safe ${cnt.low}`,            c:'#22c55e' },
-      { f:'medium', label:`Caution ${cnt.medium}`,      c:'#eab308' },
+      { f:'all',    label:`All ${pack.slogans.length}` },
+      { f:'low',    label:`Safe ${cnt.low}` },
+      { f:'medium', label:`Caution ${cnt.medium}` },
     ];
-    if (saved.size > 0) fltrs.push({ f:'saved', label:`Saved ${saved.size}`, c:'#c4b5fd' });
-    fltrs.forEach(({ f, label, c }) => {
-      const on = filter === f;
-      const style = on
-        ? `border-color:${c}33;background:${c}0d;color:${c};font-weight:600`
-        : `color:#3b4558`;
-      out += `<button class="fbtn" style="${style}" onclick="_sf('${f}')">${label}</button>`;
+    if (saved.size > 0) fltrs.push({ f:'saved', label:`Saved ${saved.size}` });
+    fltrs.forEach(({ f, label }) => {
+      out += `<button class="mo-f${filter === f ? ' on' : ''}" onclick="_sf('${f}')">${label}</button>`;
     });
     out += `</div>`;
 
     // ── Slogan list ────────────────────────────────────────────────────
-    out += `<div class="slist">`;
+    out += `<div class="mo-list">`;
+    const RLAB = { low:'Safe to list', medium:'Caution', high:'Avoid' };
+    const RCLS = { low:'safe', medium:'caution', high:'avoid' };
     filtered.forEach(s => {
-      const i     = s._i;
-      const sv    = saved.has(i);
-      const rc    = RISK_COLOR[s.risk];
+      const i = s._i;
+      const sv = saved.has(i);
       const isExp = expanded === i;
 
-      const cardStyle = sv
-        ? `background:#0c0e1a;border-color:rgba(59,53,128,.2);border-left-color:#8b5cf6`
-        : `border-color:${rc}22`;
-
-      out += `<div class="scard${sv ? ' saved' : ''}" style="${cardStyle}">`;
-
-      // row
-      out += `<div class="srow" onclick="_te(${i})">`;
-
-      // star
-      out += `<button class="star-btn${sv ? ' on' : ''}" onclick="event.stopPropagation();_ts(${i})" aria-label="${sv ? 'Unsave' : 'Save'}">${sv ? '★' : '☆'}</button>`;
-
-      // text
-      out += `<div class="stxt-wrap">
-        <div class="stxt">&quot;${h(s.text)}&quot;</div>
-        <div class="smeta">${h(s.emotion)} · ${h(s.audience)}</div>
+      out += `<div class="mo-card${sv ? ' saved' : ''}">`;
+      out += `<div class="mo-head" onclick="_te(${i})">
+        <div class="mo-text">${h(s.text)}</div>
+        <div class="mo-sub">${h(s.emotion)}${s.audience ? ' · ' + h(s.audience) : ''}</div>
+        <div class="mo-chips">
+          <span class="mo-chip ${RCLS[s.risk] || 'caution'}">${RLAB[s.risk] || 'Review'}</span>
+          ${(s.products||[]).map(p => `<span class="mo-prod">${h(p)}</span>`).join('')}
+        </div>
       </div>`;
 
-      // badges
-      out += `<div class="sbadges">`;
-      if (s.products?.length) out += `<span class="prod-badge">${s.products.join(' · ')}</span>`;
-      out += `<span class="risk-badge" style="color:${rc};background:${rc}1a">${RISK_LABEL[s.risk]}</span>`;
-      out += `</div>`;
+      out += `<div class="mo-row">
+        <button class="mo-copy" onclick="event.stopPropagation();_cp(${i},this)">Copy slogan</button>
+        <button class="mo-star${sv ? ' on' : ''}" onclick="event.stopPropagation();_ts(${i})" aria-label="Save">${sv ? '★' : '☆'}</button>
+      </div>`;
 
-      out += `</div>`; // .srow
-
-      // expanded
       if (isExp) {
-        out += `<div class="sexp">
-  <div class="step-lbl">Step 1 — AI Pre-screening</div>
-  <p class="reasoning">${h(s.reasoning)}</p>`;
-
-        // IP grid
-        out += `<div class="ip-grid">`;
-        [
-          { label:'Trademark',  v: s.tm        },
-          { label:'Copyright',  v: s.copyright },
-          { label:'Celebrity',  v: s.celebrity },
-          { label:'Brand',      v: s.brand     },
-        ].forEach(({ label, v }) => {
-          const vc = v ? '#ef4444' : '#22c55e';
-          out += `<div class="ip-cell">
-    <div class="ip-lbl">${label}</div>
-    <div class="ip-val" style="color:${vc}">${v ? '⚠ FOUND' : '✓ Clear'}</div>
-  </div>`;
+        out += `<div class="mo-exp">
+  <div class="mo-step">AI pre-screening</div>
+  <p class="mo-reason">${h(s.reasoning)}</p>
+  <div class="mo-ip">`;
+        [['Trademark',s.tm],['Copyright',s.copyright],['Celebrity',s.celebrity],['Brand',s.brand]].forEach(([label, v]) => {
+          out += `<div class="mo-ipc"><div class="mo-ipl">${label}</div><div class="mo-ipv ${v ? 'found' : 'clear'}">${v ? 'Found' : 'Clear'}</div></div>`;
         });
-        out += `</div>`; // .ip-grid
-
-        // meta row
-        out += `<div class="ip-meta">
-  <span><span style="color:#3b4558">Saturation:</span> <span style="color:#7dd3fc">${h(s.saturation)}</span></span>
-  <span><span style="color:#3b4558">Inspired by:</span> <span style="color:#6b7a8d">${h(s.inspired_by)}</span></span>
-</div>`;
-
-        // recommendation
-        const recC = s.recommendation.includes('safe') ? '#22c55e' : '#eab308';
-        out += `<div class="rec" style="color:${recC}">→ ${h(s.recommendation)}</div>`;
-
-        // verify links
-        out += `<div class="vlinks">
-  <div class="vlbl">Step 2 — Manually verify before listing</div>
-  <div class="vgrid">`;
+        out += `</div>`;
+        const recSafe = (s.recommendation || '').includes('safe');
+        out += `<div class="mo-rec" style="color:${recSafe ? 'var(--mo-safe)' : 'var(--mo-caut)'}">${h(s.recommendation)}</div>`;
+        out += `<div class="mo-vlbl">Verify before listing</div><div class="mo-vlinks">`;
         verifyLinks(s.text).forEach(l => {
-          out += `<a href="${l.url}" target="_blank" rel="noopener noreferrer" class="vlink ${l.cls}">${h(l.label)} ↗</a>`;
+          out += `<a href="${l.url}" target="_blank" rel="noopener noreferrer" class="mo-vlink">${h(l.label)} ↗</a>`;
         });
-        out += `</div></div>`; // .vgrid .vlinks
-
-        out += `</div>`; // .sexp
+        out += `</div></div>`;
       }
 
-      out += `</div>`; // .scard
+      out += `</div>`;
     });
-    out += `</div>`; // .slist
+    out += `</div>`;
 
-    // ── How it works ───────────────────────────────────────────────────
     out += `
-<div class="howto">
-  <div class="howto-title">How it works</div>
-  <div><span style="color:#22c55e">1.</span> Browse AI-verified slogans — each has been pre-screened for trademarks, copyright, celebrity likeness, and brand conflicts.</div>
-  <div><span style="color:#22c55e">2.</span> Click any slogan → expand → use the verification links to manually confirm on USPTO, UK IPO, EUIPO, and marketplaces.</div>
-  <div><span style="color:#22c55e">3.</span> Star your winners → Export as CSV for your merch workflow.</div>
-  <div class="howto-note">AI screening catches ~95% of issues. The manual step catches the rest. Always verify before listing.</div>
+<div class="mo-howto">
+  <h3>How it works</h3>
+  <p>1. Browse slogans, each pre-screened for trademark, copyright, celebrity and brand conflicts.</p>
+  <p>2. Tap Copy and paste straight into your Merch by Amazon listing.</p>
+  <p>3. Open a card to verify on USPTO, UK IPO, EUIPO and the marketplaces before listing.</p>
+  <p class="n">AI screening catches most issues; the manual check catches the rest. Always verify before listing.</p>
 </div>`;
 
   } else {
-    out += `<div class="empty"><div style="font-size:14px;font-family:var(--sans)">No niche packs loaded yet.</div></div>`;
+    out += `<div class="mo-empty">No slogans loaded yet.</div>`;
   }
 
   out += `</main>`;
 
-  // ── Footer ─────────────────────────────────────────────────────────
   out += `
-<footer class="footer">
+<footer class="mo-foot">
   Powered by <a href="https://merchality.com" target="_blank" rel="noopener noreferrer">Slogan Forge — IP-screened merch slogans</a>
 </footer>`;
 
@@ -927,6 +974,43 @@ function _mkt()  { S.mktOpen = !S.mktOpen; render(); }
 function _sf(f)  { S.filter = f; render(); }
 function _te(i)  { S.expanded = S.expanded === i ? null : i; render(); }
 function _ts(i)  { S.saved.has(i) ? S.saved.delete(i) : S.saved.add(i); render(); }
+
+// ── Copy to clipboard ──────────────────────────────────────────────────
+function _cp(i, btn) {
+  const p = NICHE_PACKS.find(x => x.id === S.pack);
+  if (!p) return;
+  const s = p.slogans[i];
+  if (s) _copy(s.text, btn);
+}
+function _copy(txt, btn) {
+  const done = () => {
+    if (btn) {
+      const o = btn.textContent;
+      btn.textContent = 'Copied';
+      btn.classList.add('ok');
+      setTimeout(() => { btn.textContent = o; btn.classList.remove('ok'); }, 1100);
+    }
+    _toast('Copied to clipboard');
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done).catch(() => _fallbackCopy(txt, done));
+  } else {
+    _fallbackCopy(txt, done);
+  }
+}
+function _fallbackCopy(txt, done) {
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) { _toast('Copy failed'); }
+  document.body.removeChild(ta);
+}
+function _toast(m) {
+  let t = document.getElementById('mo-toast');
+  if (!t) { t = document.createElement('div'); t.id = 'mo-toast'; t.className = 'mo-toast'; document.body.appendChild(t); }
+  t.textContent = m; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1400);
+}
 
 function _exp() {
   const pack = NICHE_PACKS.find(p => p.id === S.pack);
