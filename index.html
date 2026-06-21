@@ -949,7 +949,7 @@ function render() {
           { lbl:'Description 1', val:m.bullet1, max:256 },
           { lbl:'Description 2', val:m.bullet2, max:256 },
         ];
-        out += `<div class="mo-listing"><div class="mo-step">Amazon Merch listing · describes the design only (policy-safe)</div>`;
+        out += `<div class="mo-listing"><div class="mo-step">Amazon Merch listing · keyword-optimised for search (policy-safe)</div>`;
         flds.forEach((f, fi) => {
           const over = f.val.length > f.max;
           out += `<div class="mo-fld">
@@ -992,7 +992,7 @@ function render() {
 <div class="mo-howto">
   <h3>How it works</h3>
   <p>1. Browse slogans, each pre-screened for trademark, copyright, celebrity and brand conflicts.</p>
-  <p>2. Tap Copy for the slogan, or tap A to generate the full Amazon Merch listing: title, brand, and both description bullets, each with its own copy button and live character count. Metadata describes the design only (no gift, promo, quality or shipping language) to stay within Amazon's content policy.</p>
+  <p>2. Tap Copy for the slogan, or tap A to generate the full Amazon Merch listing: title, brand, and both description bullets, each with its own copy button and live character count. Metadata is written for search discoverability (theme and audience keywords) and never comments on the garment, with no gift, promo, quality or shipping language, to stay within Amazon's content policy.</p>
   <p>3. Open a card to verify on USPTO, UK IPO, EUIPO and the marketplaces before listing.</p>
   <p class="n">AI screening catches most issues; the manual check catches the rest. Always verify before listing.</p>
 </div>`;
@@ -1108,17 +1108,27 @@ function _mbaCopy(s) {
   // Brand: consistent across all listings.
   const brand = 'Merch Observer';
 
-  // Description 1 (bullet 1, max 256): describe the artwork itself.
-  const toneWord = isFunny ? 'humorous' : (emotion || 'original');
-  const article  = /^[aeiou]/i.test(toneWord) ? 'an' : 'a';
-  const audClause = audience ? `, made for ${audience}` : '';
-  const b1raw = `Original typography design featuring the saying "${s.text}". Bold hand-lettered wording with ${article} ${toneWord} feel${audClause}.`;
-  const bullet1 = b1raw.substring(0, 256);
+  // Descriptions: keyword-rich for DISCOVERABILITY. Describe the design's
+  // THEME + AUDIENCE so the shirt is findable in search. Never comment on the
+  // garment/build (no fabric, fit, "printed on", "soft"), and no gift/promo/
+  // quality/shipping language or product-type words. No em dashes.
+  const emoAdj  = emotion || 'relatable';
+  const humNoun = isFunny ? 'humour' : 'sayings';
+  const audTerms   = audience.split(/,|\band\b|\//i).map(x => x.trim()).filter(Boolean);
+  const audPrimary = audTerms[0] || '';
+  const audList    = audTerms.join(', ');
 
-  // Description 2 (bullet 2, max 256): design theme + who relates. No gifting.
-  const audSpeak = audience ? `Speaks to ${audience} and anyone who relates to the message.` : 'For anyone who relates to the message.';
-  const b2raw = `A bold statement graphic built around the words "${s.text}", set as the main artwork. ${audSpeak}`;
-  const bullet2 = b2raw.substring(0, 256);
+  // Description 1 (max 256): theme + audience keywords.
+  let b1raw = audList
+    ? `${tone}saying for ${audList}: "${s.text}". A ${emoAdj} quote that ${audPrimary ? audPrimary + ' and ' : ''}fans of relatable ${humNoun} will enjoy.`
+    : `${tone}saying "${s.text}". A ${emoAdj} quote for anyone who enjoys relatable ${humNoun}.`;
+  b1raw = b1raw.replace(/\s+/g, ' ').trim();
+  const bullet1 = (b1raw.charAt(0).toUpperCase() + b1raw.slice(1)).substring(0, 256);
+
+  // Description 2 (max 256): synonyms + related search terms.
+  let b2raw = `${tone}sayings and quotes for ${audList || 'everyday life'}. A ${emoAdj} one-liner ${audPrimary ? 'that ' + audPrimary + ' will recognise' : 'that stands out'}.`;
+  b2raw = b2raw.replace(/\s+/g, ' ').trim();
+  const bullet2 = (b2raw.charAt(0).toUpperCase() + b2raw.slice(1)).substring(0, 256);
 
   return { title, brand, bullet1, bullet2 };
 }
