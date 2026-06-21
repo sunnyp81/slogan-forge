@@ -344,6 +344,21 @@ body{background-image:radial-gradient(58rem 26rem at 50% -8rem,rgba(91,84,230,.1
 .mo-star{width:46px;flex:0 0 auto;border:1px solid var(--mo-line);background:var(--mo-card);border-radius:12px;font-size:18px;color:#c9c9d6;cursor:pointer;transition:transform .12s,color .12s;}
 .mo-star:hover{transform:translateY(-1px);}
 .mo-star.on{color:#f5b301;border-color:#f3e2a8;background:#fef9ec;}
+.mo-list-btn{width:46px;flex:0 0 auto;border:1px solid var(--mo-line);background:var(--mo-card);border-radius:12px;font-size:17px;color:var(--mo-accent);cursor:pointer;transition:transform .12s,border-color .12s;}
+.mo-list-btn:hover{transform:translateY(-1px);border-color:var(--mo-accent);}
+.mo-list-btn.on{background:var(--mo-accent-soft);border-color:#cfcbf7;}
+.mo-listing{border-top:1px solid var(--mo-line);padding:16px;background:#fcfcfb;}
+.mo-fld{margin-bottom:12px;}
+.mo-fld:last-child{margin-bottom:0;}
+.mo-fld-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px;}
+.mo-fld-lbl{font:600 11px var(--mo-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--mo-muted);}
+.mo-fld-cc{font:500 10.5px var(--mo-mono);color:var(--mo-muted);}
+.mo-fld-cc.over{color:var(--mo-avoid);}
+.mo-fld-row{display:flex;gap:8px;align-items:stretch;}
+.mo-fld-val{flex:1;font:500 13px var(--mo-sans);color:var(--mo-ink);background:#fff;border:1px solid var(--mo-line);border-radius:9px;padding:9px 11px;line-height:1.45;word-break:break-word;}
+.mo-fld-cp{flex:0 0 auto;align-self:flex-start;font:600 11px var(--mo-sans);padding:9px 11px;border-radius:9px;border:1px solid var(--mo-line);background:#fff;color:var(--mo-accent);cursor:pointer;transition:transform .12s,background .15s;}
+.mo-fld-cp:hover{transform:translateY(-1px);}
+.mo-fld-cp.ok{background:var(--mo-safe);color:#fff;border-color:var(--mo-safe);}
 .mo-exp{border-top:1px solid var(--mo-line);padding:16px;background:#fcfcfb;}
 .mo-step{font:600 11px var(--mo-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--mo-muted);margin-bottom:8px;}
 .mo-reason{font-size:13.5px;color:var(--mo-ink2);line-height:1.55;}
@@ -794,6 +809,7 @@ const S = {
   filter:     'all',
   saved:      new Set(),
   mktOpen:    false,
+  listing:    null,
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -918,10 +934,37 @@ function render() {
         </div>
       </div>`;
 
+      const isLst = S.listing === i;
       out += `<div class="mo-row">
         <button class="mo-copy" onclick="event.stopPropagation();_cp(${i},this)">Copy slogan</button>
+        <button class="mo-list-btn${isLst ? ' on' : ''}" onclick="event.stopPropagation();_tl(${i})" aria-label="Amazon Merch listing" title="Generate Amazon Merch listing">A</button>
         <button class="mo-star${sv ? ' on' : ''}" onclick="event.stopPropagation();_ts(${i})" aria-label="Save">${sv ? '★' : '☆'}</button>
       </div>`;
+
+      if (isLst) {
+        const m = _mbaCopy(s);
+        const flds = [
+          { lbl:'Title',         val:m.title,   max:60  },
+          { lbl:'Brand',         val:m.brand,   max:50  },
+          { lbl:'Description 1', val:m.bullet1, max:256 },
+          { lbl:'Description 2', val:m.bullet2, max:256 },
+        ];
+        out += `<div class="mo-listing"><div class="mo-step">Amazon Merch listing · paste straight in</div>`;
+        flds.forEach((f, fi) => {
+          const over = f.val.length > f.max;
+          out += `<div class="mo-fld">
+            <div class="mo-fld-top">
+              <span class="mo-fld-lbl">${f.lbl}</span>
+              <span class="mo-fld-cc${over ? ' over' : ''}">${f.val.length}/${f.max}</span>
+            </div>
+            <div class="mo-fld-row">
+              <div class="mo-fld-val">${h(f.val)}</div>
+              <button class="mo-fld-cp" onclick="event.stopPropagation();_cpf(${i},${fi},this)">Copy</button>
+            </div>
+          </div>`;
+        });
+        out += `</div>`;
+      }
 
       if (isExp) {
         out += `<div class="mo-exp">
@@ -949,7 +992,7 @@ function render() {
 <div class="mo-howto">
   <h3>How it works</h3>
   <p>1. Browse slogans, each pre-screened for trademark, copyright, celebrity and brand conflicts.</p>
-  <p>2. Tap Copy and paste straight into your Merch by Amazon listing.</p>
+  <p>2. Tap Copy for the slogan, or tap A to generate the full Amazon Merch listing — optimised title, brand, and both description bullets — each with its own copy button and live character count.</p>
   <p>3. Open a card to verify on USPTO, UK IPO, EUIPO and the marketplaces before listing.</p>
   <p class="n">AI screening catches most issues; the manual check catches the rest. Always verify before listing.</p>
 </div>`;
@@ -969,11 +1012,21 @@ function render() {
 }
 
 // ── Actions (short names for inline onclick) ───────────────────────────
-function _sp(id) { S.pack = id; S.expanded = null; S.filter = 'all'; S.mktOpen = false; render(); }
+function _sp(id) { S.pack = id; S.expanded = null; S.filter = 'all'; S.mktOpen = false; S.listing = null; render(); }
 function _mkt()  { S.mktOpen = !S.mktOpen; render(); }
 function _sf(f)  { S.filter = f; render(); }
 function _te(i)  { S.expanded = S.expanded === i ? null : i; render(); }
 function _ts(i)  { S.saved.has(i) ? S.saved.delete(i) : S.saved.add(i); render(); }
+function _tl(i)  { S.listing = S.listing === i ? null : i; render(); }
+function _cpf(i, fi, btn) {
+  const p = NICHE_PACKS.find(x => x.id === S.pack);
+  if (!p) return;
+  const s = p.slogans[i];
+  if (!s) return;
+  const m = _mbaCopy(s);
+  const val = [m.title, m.brand, m.bullet1, m.bullet2][fi];
+  if (val != null) _copy(val, btn);
+}
 
 // ── Copy to clipboard ──────────────────────────────────────────────────
 function _cp(i, btn) {
@@ -1031,20 +1084,29 @@ function _exp() {
 
 // ── MBA copy generator ─────────────────────────────────────────────────
 function _mbaCopy(s) {
-  // Title: max 60 chars. Format: "[Slogan]" — Funny [Audience] Gift
-  const titleLong = `"${s.text}" — Funny ${s.audience} Gift`;
-  const title = titleLong.length <= 60 ? titleLong : `"${s.text}"`.substring(0, 57) + '...';
+  const audience = (s.audience && String(s.audience).trim()) || 'anyone with a sense of humour';
+  const emotion  = (s.emotion && String(s.emotion).trim())   || 'funny';
+
+  // Title: max 60 chars. Prefer the full gift format, then degrade gracefully.
+  const t1 = `"${s.text}" — Funny ${audience} Gift`;
+  const t2 = `"${s.text}" — Funny Gift`;
+  const t3 = `"${s.text}"`;
+  const title = t1.length <= 60 ? t1
+              : t2.length <= 60 ? t2
+              : t3.length <= 60 ? t3
+              : (`"${s.text}`.substring(0, 56) + '..."');
 
   // Brand: consistent across all listings
   const brand = 'Merch Observer';
 
-  // Bullet 1: design/message description (~256 chars)
+  // Description 1 (bullet 1): design/message description (max 256 chars)
   const prods = (s.products||['t-shirt']).map(p => p === 'tee' ? 't-shirt' : p).join(', ');
-  const b1raw = `${s.text} — a ${s.emotion} design for ${s.audience}. ${s.inspired_by}. Printed on a soft, lightweight ${prods}. Perfect for anyone who loves a bit of ${s.emotion}.`;
+  const insp = s.inspired_by ? ` ${String(s.inspired_by).trim()}.` : '';
+  const b1raw = `${s.text} — a ${emotion} design for ${audience}.${insp} Printed on a soft, lightweight ${prods}. Perfect for anyone who loves a bit of ${emotion}.`;
   const bullet1 = b1raw.substring(0, 256);
 
-  // Bullet 2: gift occasion + product quality (~256 chars)
-  const b2raw = `Makes a brilliant gift for ${s.audience} — birthdays, Christmas, Secret Santa, or just because. Classic fit, double-needle sleeve and bottom hem. Available in multiple colours and sizes.`;
+  // Description 2 (bullet 2): gift occasion + product quality (max 256 chars)
+  const b2raw = `Makes a brilliant gift for ${audience} — birthdays, Christmas, Secret Santa, or just because. Classic fit, double-needle sleeve and bottom hem. Available in multiple colours and sizes.`;
   const bullet2 = b2raw.substring(0, 256);
 
   return { title, brand, bullet1, bullet2 };
