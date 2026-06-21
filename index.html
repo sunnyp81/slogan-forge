@@ -949,7 +949,7 @@ function render() {
           { lbl:'Description 1', val:m.bullet1, max:256 },
           { lbl:'Description 2', val:m.bullet2, max:256 },
         ];
-        out += `<div class="mo-listing"><div class="mo-step">Amazon Merch listing · paste straight in</div>`;
+        out += `<div class="mo-listing"><div class="mo-step">Amazon Merch listing · describes the design only (policy-safe)</div>`;
         flds.forEach((f, fi) => {
           const over = f.val.length > f.max;
           out += `<div class="mo-fld">
@@ -992,7 +992,7 @@ function render() {
 <div class="mo-howto">
   <h3>How it works</h3>
   <p>1. Browse slogans, each pre-screened for trademark, copyright, celebrity and brand conflicts.</p>
-  <p>2. Tap Copy for the slogan, or tap A to generate the full Amazon Merch listing — optimised title, brand, and both description bullets — each with its own copy button and live character count.</p>
+  <p>2. Tap Copy for the slogan, or tap A to generate the full Amazon Merch listing: title, brand, and both description bullets, each with its own copy button and live character count. Metadata describes the design only (no gift, promo, quality or shipping language) to stay within Amazon's content policy.</p>
   <p>3. Open a card to verify on USPTO, UK IPO, EUIPO and the marketplaces before listing.</p>
   <p class="n">AI screening catches most issues; the manual check catches the rest. Always verify before listing.</p>
 </div>`;
@@ -1083,30 +1083,41 @@ function _exp() {
 }
 
 // ── MBA copy generator ─────────────────────────────────────────────────
+// Amazon Merch metadata policy: titles/bullets must describe the DESIGN only.
+// BANNED: gift/occasion language (gift, perfect for, birthday, Christmas),
+// promo/subjective claims (best seller, premium, limited edition), shipping,
+// quality/garment claims, health/eco claims, charity/review asks, contact info,
+// and product-type words (shirt, tee, hoodie) — Amazon appends those itself.
+// No em/en dashes (house rule). Keep it factual about the artwork.
 function _mbaCopy(s) {
-  const audience = (s.audience && String(s.audience).trim()) || 'anyone with a sense of humour';
-  const emotion  = (s.emotion && String(s.emotion).trim())   || 'funny';
+  const audience = (s.audience && String(s.audience).trim()) || '';
+  const emotion  = s.emotion ? String(s.emotion).trim().toLowerCase() : '';
+  const isFunny  = /humou?r|sarcas|wit|funny|joke|dry|dark/.test(emotion);
+  const tone     = isFunny ? 'Funny ' : '';
 
-  // Title: max 60 chars. Prefer the full gift format, then degrade gracefully.
-  const t1 = `"${s.text}" — Funny ${audience} Gift`;
-  const t2 = `"${s.text}" — Funny Gift`;
-  const t3 = `"${s.text}"`;
+  // Title (max 60): describe the design. No product type, no gift/promo words.
+  const aud = audience ? audience + ' ' : '';
+  const t1 = `"${s.text}" ${tone}${aud}Saying`.replace(/\s+/g, ' ').trim();
+  const t2 = `"${s.text}" ${tone}Saying Design`.replace(/\s+/g, ' ').trim();
+  const t3 = `"${s.text}" Design`;
   const title = t1.length <= 60 ? t1
               : t2.length <= 60 ? t2
               : t3.length <= 60 ? t3
               : (`"${s.text}`.substring(0, 56) + '..."');
 
-  // Brand: consistent across all listings
+  // Brand: consistent across all listings.
   const brand = 'Merch Observer';
 
-  // Description 1 (bullet 1): design/message description (max 256 chars)
-  const prods = (s.products||['t-shirt']).map(p => p === 'tee' ? 't-shirt' : p).join(', ');
-  const insp = s.inspired_by ? ` ${String(s.inspired_by).trim()}.` : '';
-  const b1raw = `${s.text} — a ${emotion} design for ${audience}.${insp} Printed on a soft, lightweight ${prods}. Perfect for anyone who loves a bit of ${emotion}.`;
+  // Description 1 (bullet 1, max 256): describe the artwork itself.
+  const toneWord = isFunny ? 'humorous' : (emotion || 'original');
+  const article  = /^[aeiou]/i.test(toneWord) ? 'an' : 'a';
+  const audClause = audience ? `, made for ${audience}` : '';
+  const b1raw = `Original typography design featuring the saying "${s.text}". Bold hand-lettered wording with ${article} ${toneWord} feel${audClause}.`;
   const bullet1 = b1raw.substring(0, 256);
 
-  // Description 2 (bullet 2): gift occasion + product quality (max 256 chars)
-  const b2raw = `Makes a brilliant gift for ${audience} — birthdays, Christmas, Secret Santa, or just because. Classic fit, double-needle sleeve and bottom hem. Available in multiple colours and sizes.`;
+  // Description 2 (bullet 2, max 256): design theme + who relates. No gifting.
+  const audSpeak = audience ? `Speaks to ${audience} and anyone who relates to the message.` : 'For anyone who relates to the message.';
+  const b2raw = `A bold statement graphic built around the words "${s.text}", set as the main artwork. ${audSpeak}`;
   const bullet2 = b2raw.substring(0, 256);
 
   return { title, brand, bullet1, bullet2 };
