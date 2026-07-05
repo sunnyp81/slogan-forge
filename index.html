@@ -966,10 +966,11 @@ function render() {
       if (isLst) {
         const m = _mbaCopy(s);
         const flds = [
-          { lbl:'Title',         val:m.title,   max:60  },
-          { lbl:'Brand',         val:m.brand,   max:50  },
-          { lbl:'Description 1', val:m.bullet1, max:256 },
-          { lbl:'Description 2', val:m.bullet2, max:256 },
+          { lbl:'Title',         val:m.title,       max:60   },
+          { lbl:'Brand',         val:m.brand,       max:50   },
+          { lbl:'Bullet 1',      val:m.bullet1,     max:256  },
+          { lbl:'Bullet 2',      val:m.bullet2,     max:256  },
+          { lbl:'Description',   val:m.description, max:2000 },
         ];
         out += `<div class="mo-listing"><div class="mo-step">Amazon Merch listing · keyword-optimised for search (policy-safe)</div>`;
         flds.forEach((f, fi) => {
@@ -1049,7 +1050,7 @@ function _cpf(i, fi, btn) {
   const s = p.slogans[i];
   if (!s) return;
   const m = _mbaCopy(s);
-  const val = [m.title, m.brand, m.bullet1, m.bullet2][fi];
+  const val = [m.title, m.brand, m.bullet1, m.bullet2, m.description][fi];
   if (val != null) _copy(val, btn);
 }
 
@@ -1120,42 +1121,53 @@ function _mbaCopy(s) {
   const isFunny  = /humou?r|sarcas|wit|funny|joke|dry|dark/.test(emotion);
   const tone     = isFunny ? 'Funny ' : '';
 
-  // Title (max 60): describe the design. No product type, no gift/promo words.
+  // Title (max 60): straight copy-paste, no quotes. Design text leads, then
+  // 1-2 relevant modifiers. No product type, no gift/promo words.
   const aud = audience ? audience + ' ' : '';
-  const t1 = `"${s.text}" ${tone}${aud}Saying`.replace(/\s+/g, ' ').trim();
-  const t2 = `"${s.text}" ${tone}Saying Design`.replace(/\s+/g, ' ').trim();
-  const t3 = `"${s.text}" Design`;
+  const t1 = `${s.text} ${tone}${aud}Saying`.replace(/\s+/g, ' ').trim();
+  const t2 = `${s.text} ${tone}Saying Design`.replace(/\s+/g, ' ').trim();
+  const t3 = `${s.text} Design`.replace(/\s+/g, ' ').trim();
   const title = t1.length <= 60 ? t1
               : t2.length <= 60 ? t2
               : t3.length <= 60 ? t3
-              : (`"${s.text}`.substring(0, 56) + '..."');
+              : s.text.substring(0, 57).trim() + '...';
 
-  // Brand: consistent across all listings.
-  const brand = 'Merch Observer';
+  // Brand: consistent across all listings (shirtswift.com — no domains allowed).
+  const brand = 'Shirt Swift';
 
   // Descriptions: keyword-rich for DISCOVERABILITY. Describe the design's
   // THEME + AUDIENCE so the shirt is findable in search. Never comment on the
   // garment/build (no fabric, fit, "printed on", "soft"), and no gift/promo/
   // quality/shipping language or product-type words. No em dashes.
-  const emoAdj  = emotion || 'relatable';
-  const humNoun = isFunny ? 'humour' : 'sayings';
+  // One clean theme phrase — never stack the emotion and the noun (avoids
+  // "dark humour humour"). Uses the emotion verbatim if given.
+  const vibe = emotion || (isFunny ? 'funny sayings' : 'relatable sayings');
+  const funnyAdj  = isFunny ? 'funny ' : '';
   const audTerms   = audience.split(/,|\band\b|\//i).map(x => x.trim()).filter(Boolean);
   const audPrimary = audTerms[0] || '';
   const audList    = audTerms.join(', ');
 
-  // Description 1 (max 256): theme + audience keywords.
+  // Bullet 1 (max 256): WHO it's for + the theme (audience + niche signal).
   let b1raw = audList
-    ? `${tone}saying for ${audList}: "${s.text}". A ${emoAdj} quote that ${audPrimary ? audPrimary + ' and ' : ''}fans of relatable ${humNoun} will enjoy.`
-    : `${tone}saying "${s.text}". A ${emoAdj} quote for anyone who enjoys relatable ${humNoun}.`;
+    ? `Perfect for ${audList} who love ${vibe}. A bold ${funnyAdj}saying that ${audPrimary || 'they'} will instantly recognise.`
+    : `Perfect for anyone who loves ${vibe}. A bold ${funnyAdj}saying that stands out.`;
   b1raw = b1raw.replace(/\s+/g, ' ').trim();
   const bullet1 = (b1raw.charAt(0).toUpperCase() + b1raw.slice(1)).substring(0, 256);
 
-  // Description 2 (max 256): synonyms + related search terms.
-  let b2raw = `${tone}sayings and quotes for ${audList || 'everyday life'}. A ${emoAdj} one-liner ${audPrimary ? 'that ' + audPrimary + ' will recognise' : 'that stands out'}.`;
+  // Bullet 2 (max 256): DISTINCT signal — occasion/use-case + style angle.
+  // No repeat of bullet 1's audience+theme framing.
+  let b2raw = `Great for casual everyday wear and standing out in a crowd. Features a bold typographic design with a clean, statement look.`;
   b2raw = b2raw.replace(/\s+/g, ' ').trim();
   const bullet2 = (b2raw.charAt(0).toUpperCase() + b2raw.slice(1)).substring(0, 256);
 
-  return { title, brand, bullet1, bullet2 };
+  // Description (2-4 sentences): theme -> audience -> style. Gift-free per the
+  // account-safe MBA content policy (no gift/holiday/promo language).
+  let draw = audList
+    ? `A bold ${funnyAdj}typographic design featuring the saying: ${s.text}. Made for ${audList} who enjoy ${vibe}. A simple, statement look for casual everyday wear.`
+    : `A bold ${funnyAdj}typographic design featuring the saying: ${s.text}. For anyone who enjoys ${vibe}. A simple, statement look for casual everyday wear.`;
+  const description = draw.replace(/\s+/g, ' ').trim();
+
+  return { title, brand, bullet1, bullet2, description };
 }
 
 function _mba() {
@@ -1163,10 +1175,10 @@ function _mba() {
   if (!pack) return;
   const items = pack.slogans.filter((_, i) => S.saved.has(pack.id + ':' + i));
   if (!items.length) return;
-  const H = ['Title','Brand','Bullet1','Bullet2','Slogan','Risk','Audience','Saturation','Recommendation'];
+  const H = ['Title','Brand','Bullet1','Bullet2','Description','Slogan','Risk','Audience','Saturation','Recommendation'];
   const rows = items.map(s => {
-    const { title, brand, bullet1, bullet2 } = _mbaCopy(s);
-    return [title, brand, bullet1, bullet2, s.text, s.risk, s.audience, s.saturation, s.recommendation]
+    const { title, brand, bullet1, bullet2, description } = _mbaCopy(s);
+    return [title, brand, bullet1, bullet2, description, s.text, s.risk, s.audience, s.saturation, s.recommendation]
       .map(v => '"' + String(v).replace(/"/g, '""') + '"');
   });
   const csv = [H.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -1445,12 +1457,12 @@ async function _designs(btn) {
     }
 
     // metadata.csv — one row per slogan, filenames matched to the PNGs
-    const HDR = ['File (dark shirts)','File (light shirts)','Template','Title','Brand','Bullet1','Bullet2','Slogan','Risk'];
+    const HDR = ['File (dark shirts)','File (light shirts)','Template','Title','Brand','Bullet1','Bullet2','Description','Slogan','Risk'];
     const rows = meta.map(({ s, tplId, files }) => {
       const m = _mbaCopy(s);
       const dark  = files.find(f => f.includes('dark-shirts'))  || '';
       const light = files.find(f => f.includes('light-shirts')) || '';
-      return [dark, light, tplId, m.title, m.brand, m.bullet1, m.bullet2, s.text, s.risk]
+      return [dark, light, tplId, m.title, m.brand, m.bullet1, m.bullet2, m.description, s.text, s.risk]
         .map(v => '"' + String(v).replace(/"/g, '""') + '"');
     });
     zip.file('metadata.csv', [HDR.join(','), ...rows.map(r => r.join(','))].join('\n'));
