@@ -1256,6 +1256,12 @@ function _linesBlock(ctx, lines, font, maxW, gap) {
   return { sized, totalH };
 }
 
+// MBA anchors the PNG to the top of the chest print area, so a block centred
+// at H/2 prints mid-torso. Put the block's optical centre in the upper third.
+function _blockTop(H, blockH) {
+  return Math.max(140, Math.min(H * 0.30 - blockH / 2, H - 140 - blockH));
+}
+
 function _drawBlock(ctx, sized, cx, topY, font, color, accentIdx, accent) {
   let y = topY;
   sized.forEach((l, i) => {
@@ -1299,7 +1305,7 @@ const TPL_RENDER = {
     const words = s.text.toUpperCase().split(/\s+/);
     const n = Math.max(1, Math.min(4, Math.round(s.text.length / 12)));
     const { sized, totalH } = _linesBlock(ctx, _balanceWords(words, n), ANTON, maxW, 0.14);
-    _drawBlock(ctx, sized, W / 2, H / 2 - totalH / 2, ANTON, cw.ink, -1, cw.accent);
+    _drawBlock(ctx, sized, W / 2, _blockTop(H, totalH), ANTON, cw.ink, -1, cw.accent);
   },
 
   highlight(ctx, s, cw, W, H, maxW) {
@@ -1316,7 +1322,7 @@ const TPL_RENDER = {
     ].filter(l => l.length);
     const accentIdx = lines.indexOf(words[hi]);
     const { sized, totalH } = _linesBlock(ctx, lines, ANTON, maxW, 0.14);
-    _drawBlock(ctx, sized, W / 2, H / 2 - totalH / 2, ANTON, cw.ink, accentIdx, cw.accent);
+    _drawBlock(ctx, sized, W / 2, _blockTop(H, totalH), ANTON, cw.ink, accentIdx, cw.accent);
   },
 
   script(ctx, s, cw, W, H, maxW) {
@@ -1331,13 +1337,13 @@ const TPL_RENDER = {
     if (!lead) {
       ctx.font = PACIF.replace('%s', String(lastFs));
       ctx.fillStyle = cw.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(lastCap, W / 2, H / 2);
+      ctx.fillText(lastCap, W / 2, _blockTop(H, lastH) + lastH * 0.45);
       return;
     }
     const leadLines = _balanceWords(lead.split(' '), Math.max(1, Math.round(lead.length / 14)));
     const { sized, totalH } = _linesBlock(ctx, leadLines, ANTON, maxW * 0.82, 0.16);
     const blockH = totalH + lastH;
-    const topY = H / 2 - blockH / 2;
+    const topY = _blockTop(H, blockH);
     _drawBlock(ctx, sized, W / 2, topY, ANTON, cw.ink, -1, cw.accent);
     ctx.font = PACIF.replace('%s', String(lastFs));
     ctx.fillStyle = cw.accent; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1356,17 +1362,20 @@ const TPL_RENDER = {
     const radius = Math.max(maxW * 0.75, (w100 * fs / 100) / 1.35); // cap the bend
     const arcDrop = radius - Math.cos(((w100 * fs / 100) / radius) / 2) * radius + fs;
     if (!rest.length) {
-      _drawArcText(ctx, arcText, W / 2, H / 2 + radius - arcDrop / 2, radius, fs, ANTON, cw.ink);
+      const starFs = Math.round(fs * 0.5);
+      const blockH = arcDrop + fs * 0.35 + starFs;
+      const topY = _blockTop(H, blockH);
+      _drawArcText(ctx, arcText, W / 2, topY + radius + fs / 2, radius, fs, ANTON, cw.ink);
       // three accent stars under a lone arc
       ctx.fillStyle = cw.accent;
-      ctx.font = ANTON.replace('%s', '150');
+      ctx.font = ANTON.replace('%s', String(starFs));
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('★ ★ ★', W / 2, H / 2 + fs * 0.9);
+      ctx.fillText('★ ★ ★', W / 2, topY + arcDrop + fs * 0.35 + starFs / 2);
       return;
     }
     const { sized, totalH } = _linesBlock(ctx, _balanceWords(rest, Math.max(1, Math.round(rest.join(' ').length / 12))), ANTON, maxW * 0.9, 0.14);
     const blockH = arcDrop + fs * 0.35 + totalH;
-    const topY = H / 2 - blockH / 2;
+    const topY = _blockTop(H, blockH);
     _drawArcText(ctx, arcText, W / 2, topY + radius + fs / 2, radius, fs, ANTON, cw.ink);
     _drawBlock(ctx, sized, W / 2, topY + arcDrop + fs * 0.35, ANTON, cw.ink, sized.length - 1, cw.accent);
   },
@@ -1382,11 +1391,12 @@ const TPL_RENDER = {
     ctx.font = MONO.replace('%s', String(fs));
     const blockW = ctx.measureText(longest).width;
     const left = W / 2 - blockW / 2;
+    const topY = _blockTop(H, totalH);
     ctx.fillStyle = cw.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    lines.forEach((l, i) => ctx.fillText(l, left, H / 2 - totalH / 2 + i * lineH + lineH / 2));
+    lines.forEach((l, i) => ctx.fillText(l, left, topY + i * lineH + lineH / 2));
     const lastW = ctx.measureText(lines[lines.length - 1]).width;
     ctx.fillStyle = cw.accent;
-    ctx.fillRect(left + lastW + fs * 0.18, H / 2 - totalH / 2 + (lines.length - 1) * lineH + lineH * 0.14, fs * 0.5, fs * 0.82);
+    ctx.fillRect(left + lastW + fs * 0.18, topY + (lines.length - 1) * lineH + lineH * 0.14, fs * 0.5, fs * 0.82);
   },
 };
 
