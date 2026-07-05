@@ -307,6 +307,8 @@ body{background-image:radial-gradient(58rem 26rem at 50% -8rem,rgba(91,84,230,.1
 .mo-xbtn:hover{transform:translateY(-1px);box-shadow:var(--mo-sh);border-color:#dcdce4;}
 .mo-xbtn.pri{background:var(--mo-accent);border-color:var(--mo-accent);color:#fff;}
 .mo-xbtn.pri:hover{box-shadow:var(--mo-shh);}
+.mo-sel{font:600 12px var(--mo-sans);padding:8px 9px;border-radius:10px;border:1px solid var(--mo-line);background:var(--mo-card);color:var(--mo-ink2);cursor:pointer;max-width:130px;}
+@media(max-width:560px){.mo-actions{flex-wrap:wrap;justify-content:flex-end;}.mo-sel{max-width:110px;}}
 .mo-packs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none;}
 .mo-packs::-webkit-scrollbar{display:none;}
 .mo-pack{flex:0 0 auto;font:600 13px var(--mo-sans);padding:9px 14px;border-radius:999px;border:1px solid var(--mo-line);background:var(--mo-card);color:var(--mo-ink2);cursor:pointer;white-space:nowrap;transition:transform .12s,box-shadow .12s;}
@@ -807,10 +809,22 @@ const S = {
   pack:       NICHE_PACKS[0]?.id || null,
   expanded:   null,
   filter:     'all',
-  saved:      new Set(),
+  saved:      new Set(),   // keys are `${packId}:${index}` so packs don't cross-select
   mktOpen:    false,
   listing:    null,
+  tpl:        'auto',      // design template for export
+  cw:         'both',      // colorways: both | dark | light
 };
+
+try {
+  const st = JSON.parse(localStorage.getItem('mo-state') || '{}');
+  if (Array.isArray(st.saved)) S.saved = new Set(st.saved.filter(k => typeof k === 'string' && k.includes(':')));
+  if (st.tpl) S.tpl = st.tpl;
+  if (st.cw)  S.cw  = st.cw;
+} catch (e) {}
+function _persist() {
+  try { localStorage.setItem('mo-state', JSON.stringify({ saved: [...S.saved], tpl: S.tpl, cw: S.cw })); } catch (e) {}
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────
 function h(str) {
@@ -844,13 +858,15 @@ function render() {
   const pack = NICHE_PACKS.find(p => p.id === S.pack);
   const { filter, saved, expanded, mktOpen } = S;
 
+  const pk = pack ? pack.id : '';
   let filtered = [];
   if (pack) {
     const all = pack.slogans.map((s, i) => ({ ...s, _i: i }));
     if      (filter === 'all')   filtered = all;
-    else if (filter === 'saved') filtered = all.filter(s => saved.has(s._i));
+    else if (filter === 'saved') filtered = all.filter(s => saved.has(pk + ':' + s._i));
     else                         filtered = all.filter(s => s.risk === filter);
   }
+  const packSaved = pack ? pack.slogans.reduce((n, _, i) => n + (saved.has(pk + ':' + i) ? 1 : 0), 0) : 0;
 
   const cnt = pack ? {
     low:    pack.slogans.filter(s => s.risk === 'low').length,
@@ -859,7 +875,11 @@ function render() {
   } : {};
 
   // ── Header ──────────────────────────────────────────────────────────
-  const xv = saved.size > 0 ? '' : 'style="display:none"';
+  const xv = packSaved > 0 ? '' : 'style="display:none"';
+  const tplOpts = [{ id: 'auto', name: 'Auto-rotate' }, ...DESIGN_TPLS]
+    .map(t => `<option value="${t.id}"${S.tpl === t.id ? ' selected' : ''}>${h(t.name)}</option>`).join('');
+  const cwOpts = [['both','Dark + light shirts'],['dark','Dark shirts only'],['light','Light shirts only']]
+    .map(([v, l]) => `<option value="${v}"${S.cw === v ? ' selected' : ''}>${l}</option>`).join('');
   let out = `
 <div class="mo-top">
   <div class="mo-brand">
@@ -870,9 +890,11 @@ function render() {
     </div>
   </div>
   <div class="mo-actions">
+    <select class="mo-sel" ${xv} title="Design template" onchange="_stpl(this.value)">${tplOpts}</select>
+    <select class="mo-sel" ${xv} title="Shirt colours" onchange="_scw(this.value)">${cwOpts}</select>
     <button class="mo-xbtn" ${xv} onclick="_exp()">CSV</button>
     <button class="mo-xbtn" ${xv} onclick="_mba()">MBA</button>
-    <button class="mo-xbtn pri" ${xv} onclick="_png(this)">PNG</button>
+    <button class="mo-xbtn pri" ${xv} onclick="_designs(this)" title="Upload-ready transparent PNGs + metadata">Designs</button>
   </div>
 </div>
 <main>`;
@@ -909,7 +931,7 @@ function render() {
       { f:'low',    label:`Safe ${cnt.low}` },
       { f:'medium', label:`Caution ${cnt.medium}` },
     ];
-    if (saved.size > 0) fltrs.push({ f:'saved', label:`Saved ${saved.size}` });
+    if (packSaved > 0) fltrs.push({ f:'saved', label:`Saved ${packSaved}` });
     fltrs.forEach(({ f, label }) => {
       out += `<button class="mo-f${filter === f ? ' on' : ''}" onclick="_sf('${f}')">${label}</button>`;
     });
@@ -921,7 +943,7 @@ function render() {
     const RCLS = { low:'safe', medium:'caution', high:'avoid' };
     filtered.forEach(s => {
       const i = s._i;
-      const sv = saved.has(i);
+      const sv = saved.has(pk + ':' + i);
       const isExp = expanded === i;
 
       out += `<div class="mo-card${sv ? ' saved' : ''}">`;
@@ -993,7 +1015,8 @@ function render() {
   <h3>How it works</h3>
   <p>1. Browse slogans, each pre-screened for trademark, copyright, celebrity and brand conflicts.</p>
   <p>2. Tap Copy for the slogan, or tap A to generate the full Amazon Merch listing: title, brand, and both description bullets, each with its own copy button and live character count. Metadata is written for search discoverability (theme and audience keywords) and never comments on the garment, with no gift, promo, quality or shipping language, to stay within Amazon's content policy.</p>
-  <p>3. Open a card to verify on USPTO, UK IPO, EUIPO and the marketplaces before listing.</p>
+  <p>3. Star the slogans you want, pick a design template and shirt colours, then hit Designs: you get upload-ready 4500x5400 transparent PNGs (white ink for dark shirts, black ink for light shirts) plus a metadata.csv with the matching title, brand and bullets for each file. Upload straight to Merch by Amazon or Productor.</p>
+  <p>4. Open a card to verify on USPTO, UK IPO, EUIPO and the marketplaces before listing.</p>
   <p class="n">AI screening catches most issues; the manual check catches the rest. Always verify before listing.</p>
 </div>`;
 
@@ -1016,7 +1039,9 @@ function _sp(id) { S.pack = id; S.expanded = null; S.filter = 'all'; S.mktOpen =
 function _mkt()  { S.mktOpen = !S.mktOpen; render(); }
 function _sf(f)  { S.filter = f; render(); }
 function _te(i)  { S.expanded = S.expanded === i ? null : i; render(); }
-function _ts(i)  { S.saved.has(i) ? S.saved.delete(i) : S.saved.add(i); render(); }
+function _ts(i)  { const k = S.pack + ':' + i; S.saved.has(k) ? S.saved.delete(k) : S.saved.add(k); _persist(); render(); }
+function _stpl(v) { S.tpl = v; _persist(); }
+function _scw(v)  { S.cw = v; _persist(); }
 function _tl(i)  { S.listing = S.listing === i ? null : i; render(); }
 function _cpf(i, fi, btn) {
   const p = NICHE_PACKS.find(x => x.id === S.pack);
@@ -1068,7 +1093,7 @@ function _toast(m) {
 function _exp() {
   const pack = NICHE_PACKS.find(p => p.id === S.pack);
   if (!pack) return;
-  const items = pack.slogans.filter((_, i) => S.saved.has(i));
+  const items = pack.slogans.filter((_, i) => S.saved.has(pack.id + ':' + i));
   if (!items.length) return;
   const H = ['Slogan','Risk','Emotion','Audience','Products','Saturation','Recommendation'];
   const rows = items.map(s => [
@@ -1136,7 +1161,7 @@ function _mbaCopy(s) {
 function _mba() {
   const pack = NICHE_PACKS.find(p => p.id === S.pack);
   if (!pack) return;
-  const items = pack.slogans.filter((_, i) => S.saved.has(i));
+  const items = pack.slogans.filter((_, i) => S.saved.has(pack.id + ':' + i));
   if (!items.length) return;
   const H = ['Title','Brand','Bullet1','Bullet2','Slogan','Risk','Audience','Saturation','Recommendation'];
   const rows = items.map(s => {
@@ -1151,7 +1176,12 @@ function _mba() {
   a.click();
 }
 
-// ── PNG export ─────────────────────────────────────────────────────────
+// ── Design export (upload-ready MBA PNGs) ──────────────────────────────
+// Outputs TRANSPARENT 4500x5400 PNGs with no watermark/badges — files you
+// upload to Merch by Amazon as-is. Each slogan renders in a text-layout
+// template x colorway (white ink for dark shirts, black ink for light
+// shirts), zipped together with a policy-safe metadata.csv whose rows are
+// matched to the PNG filenames, ready to paste into Productor/MBA.
 function _loadJSZip() {
   return new Promise((res, rej) => {
     if (window.JSZip) { res(window.JSZip); return; }
@@ -1163,136 +1193,270 @@ function _loadJSZip() {
   });
 }
 
-function _wrapLines(ctx, text, maxWidth) {
-  const words = text.split(' ');
+let _designFontsP = null;
+function _loadDesignFonts() {
+  if (_designFontsP) return _designFontsP;
+  _designFontsP = new Promise(res => {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Anton&family=Pacifico&display=swap';
+    l.onload = res; l.onerror = res;
+    document.head.appendChild(l);
+  }).then(() => Promise.all([
+    document.fonts.load('400 200px Anton', 'ABC'),
+    document.fonts.load('400 200px Pacifico', 'ABC'),
+    document.fonts.load('500 200px "DM Mono"', 'ABC'),
+  ]).catch(() => {}));
+  return _designFontsP;
+}
+
+const DESIGN_TPLS = [
+  { id: 'stack',     name: 'Bold Stack' },
+  { id: 'highlight', name: 'Highlight Word' },
+  { id: 'script',    name: 'Script Mix' },
+  { id: 'arc',       name: 'Retro Arc' },
+  { id: 'type',      name: 'Typewriter' },
+];
+
+// suffix = which SHIRT the design is for; ink is the opposite of the shirt.
+const COLORWAYS = {
+  dark:  { suffix: 'dark-shirts',  ink: '#ffffff', accent: '#ffc94d' },
+  light: { suffix: 'light-shirts', ink: '#111111', accent: '#d7263d' },
+};
+
+// Split words into n lines with roughly equal character counts.
+function _balanceWords(words, n) {
+  n = Math.max(1, Math.min(n, words.length));
+  const per = Math.ceil(words.join(' ').length / n);
   const lines = [];
-  let line = '';
+  let cur = '';
   for (const w of words) {
-    const test = line ? line + ' ' + w : w;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      lines.push(line);
-      line = w;
-    } else {
-      line = test;
-    }
+    const test = cur ? cur + ' ' + w : w;
+    if (cur && test.length > per && lines.length < n - 1) { lines.push(cur); cur = w; }
+    else cur = test;
   }
-  if (line) lines.push(line);
+  if (cur) lines.push(cur);
   return lines;
 }
 
-async function _png(btn) {
+// Font size that makes `text` exactly `target` px wide (clamped).
+function _fitFs(ctx, text, font, target, min, max) {
+  ctx.font = font.replace('%s', '100');
+  const w = ctx.measureText(text).width || 1;
+  return Math.max(min, Math.min(max, 100 * target / w));
+}
+
+function _linesBlock(ctx, lines, font, maxW, gap) {
+  // per-line font size so every line fills the column width (classic MBA stack)
+  const sized = lines.map(t => {
+    const fs = _fitFs(ctx, t, font, maxW, 130, 660);
+    return { t, fs, h: fs * (1 + gap) };
+  });
+  const totalH = sized.reduce((a, l) => a + l.h, 0);
+  return { sized, totalH };
+}
+
+function _drawBlock(ctx, sized, cx, topY, font, color, accentIdx, accent) {
+  let y = topY;
+  sized.forEach((l, i) => {
+    ctx.font = font.replace('%s', String(l.fs));
+    ctx.fillStyle = (i === accentIdx) ? accent : color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(l.t, cx, y + l.h / 2);
+    y += l.h;
+  });
+}
+
+function _drawArcText(ctx, text, cx, cy, radius, fs, font, color) {
+  ctx.font = font.replace('%s', String(fs));
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const chars = [...text];
+  const widths = chars.map(ch => ctx.measureText(ch).width);
+  const totalW = widths.reduce((a, b) => a + b, 0);
+  let ang = -(totalW / radius) / 2;
+  chars.forEach((ch, i) => {
+    const a = ang + (widths[i] / 2) / radius;
+    ctx.save();
+    ctx.translate(cx + Math.sin(a) * radius, cy - Math.cos(a) * radius);
+    ctx.rotate(a);
+    ctx.fillText(ch, 0, 0);
+    ctx.restore();
+    ang += widths[i] / radius;
+  });
+}
+
+const ANTON = '400 %spx Anton, "Arial Black", sans-serif';
+const PACIF = '400 %spx Pacifico, cursive';
+const MONO  = '500 %spx "DM Mono", "Courier New", monospace';
+
+// Every template draws on a TRANSPARENT canvas — nothing but the slogan.
+const TPL_RENDER = {
+
+  stack(ctx, s, cw, W, H, maxW) {
+    const words = s.text.toUpperCase().split(/\s+/);
+    const n = Math.max(1, Math.min(4, Math.round(s.text.length / 12)));
+    const { sized, totalH } = _linesBlock(ctx, _balanceWords(words, n), ANTON, maxW, 0.14);
+    _drawBlock(ctx, sized, W / 2, H / 2 - totalH / 2, ANTON, cw.ink, -1, cw.accent);
+  },
+
+  highlight(ctx, s, cw, W, H, maxW) {
+    // longest word gets its own line in the accent colour
+    const words = s.text.toUpperCase().split(/\s+/);
+    if (words.length === 1) return TPL_RENDER.stack(ctx, s, cw, W, H, maxW);
+    let hi = 0;
+    words.forEach((w, i) => { if (w.length > words[hi].length) hi = i; });
+    const before = words.slice(0, hi), after = words.slice(hi + 1);
+    const lines = [
+      ..._balanceWords(before, Math.ceil(before.join(' ').length / 14) || 1).filter(Boolean),
+      words[hi],
+      ..._balanceWords(after, Math.ceil(after.join(' ').length / 14) || 1).filter(Boolean),
+    ].filter(l => l.length);
+    const accentIdx = lines.indexOf(words[hi]);
+    const { sized, totalH } = _linesBlock(ctx, lines, ANTON, maxW, 0.14);
+    _drawBlock(ctx, sized, W / 2, H / 2 - totalH / 2, ANTON, cw.ink, accentIdx, cw.accent);
+  },
+
+  script(ctx, s, cw, W, H, maxW) {
+    // leading words in caps, script tail: last word, or last two if it's short
+    const words = s.text.split(/\s+/);
+    const tailN = (words[words.length - 1].length < 4 && words.length > 1) ? 2 : 1;
+    const last = words.slice(-tailN).join(' ');
+    const lead = words.slice(0, -tailN).join(' ').toUpperCase();
+    const lastCap = last.replace(/\b\w/g, c => c.toUpperCase());
+    const lastFs = _fitFs(ctx, lastCap, PACIF, maxW * 0.92, 160, 620);
+    const lastH = lastFs * 1.5; // pacifico needs descender room
+    if (!lead) {
+      ctx.font = PACIF.replace('%s', String(lastFs));
+      ctx.fillStyle = cw.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(lastCap, W / 2, H / 2);
+      return;
+    }
+    const leadLines = _balanceWords(lead.split(' '), Math.max(1, Math.round(lead.length / 14)));
+    const { sized, totalH } = _linesBlock(ctx, leadLines, ANTON, maxW * 0.82, 0.16);
+    const blockH = totalH + lastH;
+    const topY = H / 2 - blockH / 2;
+    _drawBlock(ctx, sized, W / 2, topY, ANTON, cw.ink, -1, cw.accent);
+    ctx.font = PACIF.replace('%s', String(lastFs));
+    ctx.fillStyle = cw.accent; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(lastCap, W / 2, topY + totalH + lastH * 0.45);
+  },
+
+  arc(ctx, s, cw, W, H, maxW) {
+    // first ~half of the words arc over the rest, stacked beneath
+    const words = s.text.toUpperCase().split(/\s+/);
+    const cut = Math.max(1, Math.ceil(words.length / 2));
+    const arcText = words.slice(0, cut).join(' ');
+    const rest = words.slice(cut);
+    ctx.font = ANTON.replace('%s', '100');
+    const w100 = ctx.measureText(arcText).width || 1;
+    const fs = Math.max(150, Math.min(700, 100 * (maxW * 1.12) / w100));
+    const radius = Math.max(maxW * 0.75, (w100 * fs / 100) / 1.35); // cap the bend
+    const arcDrop = radius - Math.cos(((w100 * fs / 100) / radius) / 2) * radius + fs;
+    if (!rest.length) {
+      _drawArcText(ctx, arcText, W / 2, H / 2 + radius - arcDrop / 2, radius, fs, ANTON, cw.ink);
+      // three accent stars under a lone arc
+      ctx.fillStyle = cw.accent;
+      ctx.font = ANTON.replace('%s', '150');
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('★ ★ ★', W / 2, H / 2 + fs * 0.9);
+      return;
+    }
+    const { sized, totalH } = _linesBlock(ctx, _balanceWords(rest, Math.max(1, Math.round(rest.join(' ').length / 12))), ANTON, maxW * 0.9, 0.14);
+    const blockH = arcDrop + fs * 0.35 + totalH;
+    const topY = H / 2 - blockH / 2;
+    _drawArcText(ctx, arcText, W / 2, topY + radius + fs / 2, radius, fs, ANTON, cw.ink);
+    _drawBlock(ctx, sized, W / 2, topY + arcDrop + fs * 0.35, ANTON, cw.ink, sized.length - 1, cw.accent);
+  },
+
+  type(ctx, s, cw, W, H, maxW) {
+    // lowercase typewriter block with a cursor
+    const words = s.text.toLowerCase().split(/\s+/);
+    const lines = _balanceWords(words, Math.max(1, Math.min(5, Math.round(s.text.length / 15))));
+    const longest = lines.reduce((a, b) => (b.length > a.length ? b : a), '');
+    const fs = _fitFs(ctx, longest + '_', MONO, maxW * 0.94, 130, 460);
+    const lineH = fs * 1.34;
+    const totalH = lines.length * lineH;
+    ctx.font = MONO.replace('%s', String(fs));
+    const blockW = ctx.measureText(longest).width;
+    const left = W / 2 - blockW / 2;
+    ctx.fillStyle = cw.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    lines.forEach((l, i) => ctx.fillText(l, left, H / 2 - totalH / 2 + i * lineH + lineH / 2));
+    const lastW = ctx.measureText(lines[lines.length - 1]).width;
+    ctx.fillStyle = cw.accent;
+    ctx.fillRect(left + lastW + fs * 0.18, H / 2 - totalH / 2 + (lines.length - 1) * lineH + lineH * 0.14, fs * 0.5, fs * 0.82);
+  },
+};
+
+function _slug(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+async function _designs(btn) {
   const pack = NICHE_PACKS.find(p => p.id === S.pack);
   if (!pack) return;
-  const items = pack.slogans.filter((_, i) => S.saved.has(i));
+  const items = pack.slogans.filter((_, i) => S.saved.has(pack.id + ':' + i));
   if (!items.length) return;
 
   const orig = btn.textContent;
   btn.disabled = true;
-  btn.textContent = 'Loading…';
+  btn.textContent = 'Fonts…';
 
   try {
-    const JSZip = await _loadJSZip();
-    await document.fonts.ready;
+    const [JSZip] = await Promise.all([_loadJSZip(), _loadDesignFonts(), document.fonts.ready]);
 
-    const zip  = new JSZip();
-    const W    = 4500;
-    const H    = 5400;
-    const PAD  = 600;
+    const zip = new JSZip();
+    const W = 4500, H = 5400, PAD = 520;
+    const cws = S.cw === 'both' ? ['dark', 'light'] : [S.cw];
+    const meta = [];
 
     for (let idx = 0; idx < items.length; idx++) {
       const s = items[idx];
       btn.textContent = `${idx + 1}/${items.length}…`;
+      const tplId = S.tpl === 'auto' ? DESIGN_TPLS[idx % DESIGN_TPLS.length].id : S.tpl;
+      const row = { s, tplId, files: [] };
 
-      const canvas = document.createElement('canvas');
-      canvas.width  = W;
-      canvas.height = H;
-      const ctx = canvas.getContext('2d');
-
-      // ── Background ────────────────────────────────────────────────
-      ctx.fillStyle = '#080810';
-      ctx.fillRect(0, 0, W, H);
-
-      // Top + bottom gradient bar
-      const grad = ctx.createLinearGradient(0, 0, W, 0);
-      grad.addColorStop(0, '#3b82f6');
-      grad.addColorStop(1, '#8b5cf6');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, 14);
-      ctx.fillRect(0, H - 14, W, 14);
-
-      // ── Auto-size text to fit ──────────────────────────────────────
-      const upper   = s.text.toUpperCase();
-      const maxW    = W - PAD * 2;
-      let   fs      = s.text.length < 25 ? 420 : s.text.length < 40 ? 330 : s.text.length < 55 ? 260 : 200;
-      let   lines, lineH;
-
-      while (fs > 80) {
-        ctx.font = `800 ${fs}px "DM Sans", "Arial Black", sans-serif`;
-        lines  = _wrapLines(ctx, upper, maxW);
-        lineH  = fs * 1.22;
-        if (lines.length * lineH < H * 0.44) break;
-        fs -= 20;
+      for (const cwId of cws) {
+        const cw = COLORWAYS[cwId];
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        // no background fill — MBA requires a transparent PNG
+        TPL_RENDER[tplId](ctx, s, cw, W, H, W - PAD * 2);
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        const fname = `${_slug(s.text)}--${tplId}--${cw.suffix}.png`;
+        zip.file(fname, blob);
+        row.files.push(fname);
       }
-
-      const totalH = lines.length * lineH;
-      const midY   = H / 2;
-      const startY = midY - totalH / 2 + lineH / 2;
-
-      // ── Accent rules ──────────────────────────────────────────────
-      ctx.strokeStyle = 'rgba(99,102,241,0.5)';
-      ctx.lineWidth   = 8;
-      const ruleTop = startY - lineH * 0.9 - 70;
-      const ruleBtm = startY + totalH - lineH * 0.1 + 70;
-      ctx.beginPath(); ctx.moveTo(PAD, ruleTop); ctx.lineTo(W - PAD, ruleTop); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(PAD, ruleBtm); ctx.lineTo(W - PAD, ruleBtm); ctx.stroke();
-
-      // Small dots on rule ends
-      ctx.fillStyle = '#6366f1';
-      [[PAD, ruleTop],[W-PAD, ruleTop],[PAD, ruleBtm],[W-PAD, ruleBtm]].forEach(([x,y]) => {
-        ctx.beginPath(); ctx.arc(x, y, 18, 0, Math.PI * 2); ctx.fill();
-      });
-
-      // ── Slogan text ───────────────────────────────────────────────
-      ctx.fillStyle    = '#ffffff';
-      ctx.font         = `800 ${fs}px "DM Sans", "Arial Black", sans-serif`;
-      ctx.textAlign    = 'center';
-      ctx.textBaseline = 'middle';
-      lines.forEach((l, i) => ctx.fillText(l, W / 2, startY + i * lineH));
-
-      // ── Niche label (small, above rule) ──────────────────────────
-      ctx.fillStyle = 'rgba(99,102,241,0.7)';
-      ctx.font      = `500 70px "DM Mono", "Courier New", monospace`;
-      ctx.fillText(pack.name.toUpperCase(), W / 2, ruleTop - 80);
-
-      // ── Risk badge (small, below rule) ────────────────────────────
-      const rcMap = { low: '#22c55e', medium: '#eab308', high: '#ef4444' };
-      const rlMap = { low: '✓ IP CLEAR', medium: '⚠ VERIFY FIRST', high: '✕ HIGH RISK' };
-      ctx.fillStyle = rcMap[s.risk] || '#94a3b8';
-      ctx.font      = `500 65px "DM Mono", "Courier New", monospace`;
-      ctx.fillText(rlMap[s.risk] || '', W / 2, ruleBtm + 80);
-
-      // ── Watermark ────────────────────────────────────────────────
-      ctx.fillStyle = 'rgba(255,255,255,0.12)';
-      ctx.font      = `400 72px "DM Mono", "Courier New", monospace`;
-      ctx.fillText('merch.observer', W / 2, H - 160);
-
-      // ── Write to zip ─────────────────────────────────────────────
-      const blob  = await new Promise(r => canvas.toBlob(r, 'image/png'));
-      const fname = s.text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.png';
-      zip.file(fname, blob);
+      meta.push(row);
+      await new Promise(r => setTimeout(r, 0)); // keep UI responsive
     }
+
+    // metadata.csv — one row per slogan, filenames matched to the PNGs
+    const HDR = ['File (dark shirts)','File (light shirts)','Template','Title','Brand','Bullet1','Bullet2','Slogan','Risk'];
+    const rows = meta.map(({ s, tplId, files }) => {
+      const m = _mbaCopy(s);
+      const dark  = files.find(f => f.includes('dark-shirts'))  || '';
+      const light = files.find(f => f.includes('light-shirts')) || '';
+      return [dark, light, tplId, m.title, m.brand, m.bullet1, m.bullet2, s.text, s.risk]
+        .map(v => '"' + String(v).replace(/"/g, '""') + '"');
+    });
+    zip.file('metadata.csv', [HDR.join(','), ...rows.map(r => r.join(','))].join('\n'));
 
     btn.textContent = 'Zipping…';
     const content = await zip.generateAsync({ type: 'blob' });
     const a = document.createElement('a');
-    a.href     = URL.createObjectURL(content);
-    a.download = `designs-${pack.id}-${Date.now()}.zip`;
+    a.href = URL.createObjectURL(content);
+    a.download = `mba-designs-${pack.id}-${Date.now()}.zip`;
     a.click();
+    _toast(`${meta.length} design${meta.length > 1 ? 's' : ''} exported, upload-ready`);
 
   } catch (e) {
-    alert('PNG export failed: ' + e.message);
+    _toast('Design export failed: ' + e.message);
   } finally {
-    btn.disabled    = false;
+    btn.disabled = false;
     btn.textContent = orig;
   }
 }
