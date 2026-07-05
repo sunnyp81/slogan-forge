@@ -1139,17 +1139,24 @@ function _mbaCopy(s) {
   // THEME + AUDIENCE so the shirt is findable in search. Never comment on the
   // garment/build (no fabric, fit, "printed on", "soft"), and no gift/promo/
   // quality/shipping language or product-type words. No em dashes.
-  // One clean theme phrase — never stack the emotion and the noun (avoids
-  // "dark humour humour"). Uses the emotion verbatim if given.
-  const vibe = emotion || (isFunny ? 'funny sayings' : 'relatable sayings');
+  // One clean theme NOUN-PHRASE. Never stack the emotion and the noun (avoids
+  // "dark humour humour"); if the emotion is a bare adjective ("cheeky"),
+  // append a noun so it reads ("cheeky vibes"), else use it verbatim.
+  const emoHasNoun = /\b(humou?r|sarcasm|pride|sayings?|jokes?|vibes?|energy|puns?|quotes?|spirit|attitude)\b/i.test(emotion);
+  const vibe = emotion
+    ? (emoHasNoun ? emotion : emotion + (isFunny ? ' humour' : ' vibes'))
+    : (isFunny ? 'funny sayings' : 'relatable sayings');
   const funnyAdj  = isFunny ? 'funny ' : '';
-  const audTerms   = audience.split(/,|\band\b|\//i).map(x => x.trim()).filter(Boolean);
+  // Radar audiences can be whole phrases ("cat mums who love patriotic outfits");
+  // strip any trailing who/that/on subclause so it slots into "for X who love …".
+  const stripClause = a => a.replace(/\s+(who|that|on|with|for)\b[\s\S]*$/i, '').trim();
+  const audTerms   = audience.split(/,|\band\b|\//i).map(x => stripClause(x.trim())).filter(Boolean);
   const audPrimary = audTerms[0] || '';
   const audList    = audTerms.join(', ');
 
   // Bullet 1 (max 256): WHO it's for + the theme (audience + niche signal).
   let b1raw = audList
-    ? `Perfect for ${audList} who love ${vibe}. A bold ${funnyAdj}saying that ${audPrimary || 'they'} will instantly recognise.`
+    ? `Perfect for ${audList} who love ${vibe}. A bold ${funnyAdj}saying that ${audPrimary} will instantly recognise.`
     : `Perfect for anyone who loves ${vibe}. A bold ${funnyAdj}saying that stands out.`;
   b1raw = b1raw.replace(/\s+/g, ' ').trim();
   const bullet1 = (b1raw.charAt(0).toUpperCase() + b1raw.slice(1)).substring(0, 256);
